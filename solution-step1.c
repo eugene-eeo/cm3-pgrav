@@ -203,14 +203,18 @@ void updateBody() {
             const double d_3 = d_2 * d;
             const double mass_product = mass[j] * mass[i];
 
-            // x,y,z forces acting on particle 0
-            force0[i] += dx * mass_product / d_3 ;
-            force1[i] += dy * mass_product / d_3 ;
-            force2[i] += dz * mass_product / d_3 ;
+            // x,y,z forces acting on particle i
+            const double fx = dx * mass_product / d_3;
+            const double fy = dy * mass_product / d_3;
+            const double fz = dz * mass_product / d_3;
 
-            force0[j] -= dx * mass_product / d_3 ;
-            force1[j] -= dy * mass_product / d_3 ;
-            force2[j] -= dz * mass_product / d_3 ;
+            force0[i] += fx;
+            force1[i] += fy;
+            force2[i] += fz;
+
+            force0[j] -= fx;
+            force1[j] -= fy;
+            force2[j] -= fz;
 
             minDx = std::min( minDx, d );
         }
