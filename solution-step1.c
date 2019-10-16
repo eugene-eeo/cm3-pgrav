@@ -193,11 +193,12 @@ void updateBody() {
         for (int j = i + 1; j < NumberOfBodies; j++) {
             // i = particle to update
             // j = particle that affects i
-            // distance squared
+            // p_2 - p_1
             const double dx = x[j][0] - x[i][0];
             const double dy = x[j][1] - x[i][1];
             const double dz = x[j][2] - x[i][2];
 
+            // distance squared
             const double d_2 = (dx * dx) + (dy * dy) + (dz * dz);
             const double d   = sqrt(d_2);
             const double d_3 = d_2 * d;
@@ -232,7 +233,7 @@ void updateBody() {
         const double v_x = v[i][0];
         const double v_y = v[i][1];
         const double v_z = v[i][2];
-        maxV = std::max( maxV, std::sqrt( (v_x*v_x) + (v_y*v_y) + (v_z*v_z) ));
+        maxV = std::max( maxV, std::sqrt( (v_x*v_x) + (v_y*v_y) + (v_z*v_z) ) );
     }
 
     t += timeStepSize;
