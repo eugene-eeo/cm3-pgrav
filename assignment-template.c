@@ -66,7 +66,7 @@ double   minDx;
  * This operation is not to be changed in the assignment.
  */
 void setUp(int argc, char** argv) {
-  NumberOfBodies = (argc-3) / 7;
+  NumberOfBodies = (argc-4) / 7;
 
   x    = new double*[NumberOfBodies];
   v    = new double*[NumberOfBodies];
@@ -189,6 +189,10 @@ void updateBody() {
   double* force1 = new double[NumberOfBodies];
   double* force2 = new double[NumberOfBodies];
 
+  force0[0] = 0.0;
+  force1[0] = 0.0;
+  force2[0] = 0.0;
+
   for (int i=1; i<NumberOfBodies; i++) {
     const double distance = sqrt(
       (x[0][0]-x[i][0]) * (x[0][0]-x[i][0]) +
@@ -207,6 +211,11 @@ void updateBody() {
   x[0][0] = x[0][0] + timeStepSize * v[0][0];
   x[0][1] = x[0][1] + timeStepSize * v[0][1];
   x[0][2] = x[0][2] + timeStepSize * v[0][2];
+
+  // These are three buggy lines of code that we will use in one of the labs
+//  x[0][3] = x[0][2] + timeStepSize * v[0][2];
+//  x[0][2] = x[0][2] + timeStepSize * v[0][2] / 0.0;
+//  x[50000000][1] = x[0][2] + timeStepSize * v[0][2] / 0.0;
 
   v[0][0] = v[0][0] + timeStepSize * force0[0] / mass[0];
   v[0][1] = v[0][1] + timeStepSize * force1[0] / mass[0];
@@ -235,9 +244,10 @@ int main(int argc, char** argv) {
               << "  dt              time step size (greater 0)" << std::endl
               << std::endl
               << "Examples:" << std::endl
-              << "0.01  100.0   0 0 0 1.0   0   0 1.0 \t One body moving form the coordinate system's centre along x axis with speed 1" << std::endl
-              << "0.01  100.0   0 0 0 1.0   0   0 1.0 0 1.0 0 1.0 0   0 1.0 \t One spiralling around the other one" << std::endl
-              << "0.01  100.0 3.0 0 0   0 1.0   0 0.4 0   0 0   0 0   0 0.2 2.0 0 0 0 0 0 1.0 \t Three body setup from first lecture" << std::endl
+              << "0.01  100.0  0.001    0.0 0.0 0.0  1.0 0.0 0.0  1.0 \t One body moving form the coordinate system's centre along x axis with speed 1" << std::endl
+              << "0.01  100.0  0.001    0.0 0.0 0.0  1.0 0.0 0.0  1.0     0.0 1.0 0.0  1.0 0.0 0.0  1.0  \t One spiralling around the other one" << std::endl
+              << "0.01  100.0  0.001    3.0 0.0 0.0  0.0 1.0 0.0  0.4     0.0 0.0 0.0  0.0 0.0 0.0  0.2     2.0 0.0 0.0  0.0 0.0 0.0  1.0 \t Three body setup from first lecture" << std::endl
+              << "0.01  100.0  0.001    3.0 0.0 0.0  0.0 1.0 0.0  0.4     0.0 0.0 0.0  0.0 0.0 0.0  0.2     2.0 0.0 0.0  0.0 0.0 0.0  1.0     2.0 1.0 0.0  0.0 0.0 0.0  1.0     2.0 0.0 1.0  0.0 0.0 0.0  1.0 \t Five body setup" << std::endl
               << std::endl
               << "In this naive code, only the first body moves" << std::endl;
 
@@ -245,6 +255,8 @@ int main(int argc, char** argv) {
   }
   else if ( (argc-4)%7!=0 ) {
     std::cerr << "error in arguments: each planet is given by seven entries (position, velocity, mass)" << std::endl;
+    std::cerr << "got " << argc << " arguments (three of them are reserved)" << std::endl;
+    std::cerr << "run without arguments for usage instruction" << std::endl;
     return -2;
   }
 

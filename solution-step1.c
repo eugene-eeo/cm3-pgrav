@@ -66,48 +66,48 @@ double   minDx;
  * This operation is not to be changed in the assignment.
  */
 void setUp(int argc, char** argv) {
-    NumberOfBodies = (argc-3) / 7;
+  NumberOfBodies = (argc-4) / 7;
 
-    x    = new double*[NumberOfBodies];
-    v    = new double*[NumberOfBodies];
-    mass = new double [NumberOfBodies];
+  x    = new double*[NumberOfBodies];
+  v    = new double*[NumberOfBodies];
+  mass = new double [NumberOfBodies];
 
-    int readArgument = 1;
+  int readArgument = 1;
 
-    tPlotDelta   = std::stof(argv[readArgument]); readArgument++;
-    tFinal       = std::stof(argv[readArgument]); readArgument++;
-    timeStepSize = std::stof(argv[readArgument]); readArgument++;
+  tPlotDelta   = std::stof(argv[readArgument]); readArgument++;
+  tFinal       = std::stof(argv[readArgument]); readArgument++;
+  timeStepSize = std::stof(argv[readArgument]); readArgument++;
 
-    for (int i=0; i<NumberOfBodies; i++) {
-        x[i] = new double[3];
-        v[i] = new double[3];
+  for (int i=0; i<NumberOfBodies; i++) {
+    x[i] = new double[3];
+    v[i] = new double[3];
 
-        x[i][0] = std::stof(argv[readArgument]); readArgument++;
-        x[i][1] = std::stof(argv[readArgument]); readArgument++;
-        x[i][2] = std::stof(argv[readArgument]); readArgument++;
+    x[i][0] = std::stof(argv[readArgument]); readArgument++;
+    x[i][1] = std::stof(argv[readArgument]); readArgument++;
+    x[i][2] = std::stof(argv[readArgument]); readArgument++;
 
-        v[i][0] = std::stof(argv[readArgument]); readArgument++;
-        v[i][1] = std::stof(argv[readArgument]); readArgument++;
-        v[i][2] = std::stof(argv[readArgument]); readArgument++;
+    v[i][0] = std::stof(argv[readArgument]); readArgument++;
+    v[i][1] = std::stof(argv[readArgument]); readArgument++;
+    v[i][2] = std::stof(argv[readArgument]); readArgument++;
 
-        mass[i] = std::stof(argv[readArgument]); readArgument++;
+    mass[i] = std::stof(argv[readArgument]); readArgument++;
 
-        if (mass[i]<=0.0 ) {
-            std::cerr << "invalid mass for body " << i << std::endl;
-            exit(-2);
-        }
+    if (mass[i]<=0.0 ) {
+      std::cerr << "invalid mass for body " << i << std::endl;
+      exit(-2);
     }
+  }
 
-    std::cout << "created setup with " << NumberOfBodies << " bodies" << std::endl;
-
-    if (tPlotDelta<=0.0) {
-        std::cout << "plotting switched off" << std::endl;
-        tPlot = tFinal + 1.0;
-    }
-    else {
-        std::cout << "plot initial setup plus every " << tPlotDelta << " time units" << std::endl;
-        tPlot = 0.0;
-    }
+  std::cout << "created setup with " << NumberOfBodies << " bodies" << std::endl;
+  
+  if (tPlotDelta<=0.0) {
+    std::cout << "plotting switched off" << std::endl;
+    tPlot = tFinal + 1.0;
+  }
+  else {
+    std::cout << "plot initial setup plus every " << tPlotDelta << " time units" << std::endl;
+    tPlot = 0.0;
+  }
 }
 
 
@@ -118,10 +118,10 @@ std::ofstream videoFile;
  * This operation is not to be changed in the assignment.
  */
 void openParaviewVideoFile() {
-    videoFile.open( "result.pvd" );
-    videoFile << "<?xml version=\"1.0\"?>" << std::endl
-        << "<VTKFile type=\"Collection\" version=\"0.1\" byte_order=\"LittleEndian\" compressor=\"vtkZLibDataCompressor\">" << std::endl
-        << "<Collection>";
+  videoFile.open( "result.pvd" );
+  videoFile << "<?xml version=\"1.0\"?>" << std::endl
+            << "<VTKFile type=\"Collection\" version=\"0.1\" byte_order=\"LittleEndian\" compressor=\"vtkZLibDataCompressor\">" << std::endl
+            << "<Collection>";
 }
 
 
@@ -132,8 +132,8 @@ void openParaviewVideoFile() {
  * This operation is not to be changed in the assignment.
  */
 void closeParaviewVideoFile() {
-    videoFile << "</Collection>"
-        << "</VTKFile>" << std::endl;
+  videoFile << "</Collection>"
+            << "</VTKFile>" << std::endl;
 }
 
 
@@ -143,34 +143,34 @@ void closeParaviewVideoFile() {
  * This operation is not to be changed in the assignment.
  */
 void printParaviewSnapshot() {
-    static int counter = -1;
-    counter++;
-    std::stringstream filename;
-    filename << "result-" << counter <<  ".vtp";
-    std::ofstream out( filename.str().c_str() );
-    out << "<VTKFile type=\"PolyData\" >" << std::endl
-        << "<PolyData>" << std::endl
-        << " <Piece NumberOfPoints=\"" << NumberOfBodies << "\">" << std::endl
-        << "  <Points>" << std::endl
-        << "   <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">";
-    //      << "   <DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">";
+  static int counter = -1;
+  counter++;
+  std::stringstream filename;
+  filename << "result-" << counter <<  ".vtp";
+  std::ofstream out( filename.str().c_str() );
+  out << "<VTKFile type=\"PolyData\" >" << std::endl
+      << "<PolyData>" << std::endl
+      << " <Piece NumberOfPoints=\"" << NumberOfBodies << "\">" << std::endl
+      << "  <Points>" << std::endl
+      << "   <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">";
+//      << "   <DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">";
 
-    for (int i=0; i<NumberOfBodies; i++) {
-        out << x[i][0]
-            << " "
-            << x[i][1]
-            << " "
-            << x[i][2]
-            << " ";
-    }
+  for (int i=0; i<NumberOfBodies; i++) {
+    out << x[i][0]
+        << " "
+        << x[i][1]
+        << " "
+        << x[i][2]
+        << " ";
+  }
 
-    out << "   </DataArray>" << std::endl
-        << "  </Points>" << std::endl
-        << " </Piece>" << std::endl
-        << "</PolyData>" << std::endl
-        << "</VTKFile>"  << std::endl;
+  out << "   </DataArray>" << std::endl
+      << "  </Points>" << std::endl
+      << " </Piece>" << std::endl
+      << "</PolyData>" << std::endl
+      << "</VTKFile>"  << std::endl;
 
-    videoFile << "<DataSet timestep=\"" << counter << "\" group=\"\" part=\"0\" file=\"" << filename.str() << "\"/>" << std::endl;
+  videoFile << "<DataSet timestep=\"" << counter << "\" group=\"\" part=\"0\" file=\"" << filename.str() << "\"/>" << std::endl;
 }
 
 
@@ -179,68 +179,64 @@ void printParaviewSnapshot() {
  * This is the only operation you are allowed to change in the assignment.
  */
 void updateBody() {
-    maxV   = 0.0;
-    minDx  = std::numeric_limits<double>::max();
+  maxV   = 0.0;
+  minDx  = std::numeric_limits<double>::max();
 
-    // force0 = force along x direction
-    // force1 = force along y direction
-    // force2 = force along z direction
-    double* force0 = new double[NumberOfBodies];
-    double* force1 = new double[NumberOfBodies];
-    double* force2 = new double[NumberOfBodies];
+  // force0 = force along x direction
+  // force1 = force along y direction
+  // force2 = force along z direction
+  double* force0 = new double[NumberOfBodies];
+  double* force1 = new double[NumberOfBodies];
+  double* force2 = new double[NumberOfBodies];
 
-    for (int i = 0; i < NumberOfBodies; i++) {
-        for (int j = i + 1; j < NumberOfBodies; j++) {
-            // i = particle to update
-            // j = particle that affects i
-            // p_2 - p_1
-            const double dx = x[j][0] - x[i][0];
-            const double dy = x[j][1] - x[i][1];
-            const double dz = x[j][2] - x[i][2];
+  /* force0[0] = 0.0; */
+  /* force1[0] = 0.0; */
+  /* force2[0] = 0.0; */
 
-            // distance squared
-            const double d_2 = (dx * dx) + (dy * dy) + (dz * dz);
-            const double d   = sqrt(d_2);
-            const double d_3 = d_2 * d;
-            const double mass_product = mass[j] * mass[i];
+  for (int i = 0; i < NumberOfBodies; i++) {
+    for (int j = i+1; j < NumberOfBodies; j++) {
+      const double dx = x[j][0] - x[i][0];
+      const double dy = x[j][1] - x[i][1];
+      const double dz = x[j][2] - x[i][2];
 
-            // x,y,z forces acting on particle i
-            const double fx = dx * mass_product / d_3;
-            const double fy = dy * mass_product / d_3;
-            const double fz = dz * mass_product / d_3;
+      const double distance_squared = dx*dx + dy*dy + dz*dz;
+      const double distance = sqrt(distance_squared);
+      const double multiple = mass[j] * mass[i] / (distance_squared * distance);
 
-            force0[i] += fx;
-            force1[i] += fy;
-            force2[i] += fz;
+      const double force_x = dx * multiple;
+      const double force_y = dy * multiple;
+      const double force_z = dz * multiple;
 
-            force0[j] -= fx;
-            force1[j] -= fy;
-            force2[j] -= fz;
+      // x,y,z forces acting on particle i
+      force0[i] += force_x;
+      force1[i] += force_y;
+      force2[i] += force_z;
 
-            minDx = std::min( minDx, d );
-        }
+      force0[j] -= force_x;
+      force1[j] -= force_y;
+      force2[j] -= force_z;
+
+      minDx = std::min( minDx,distance );
     }
+  }
 
-    for (int i = 0; i < NumberOfBodies; i++) {
-        x[i][0] += timeStepSize * v[i][0];
-        x[i][1] += timeStepSize * v[i][1];
-        x[i][2] += timeStepSize * v[i][2];
+  for (int i = 0; i < NumberOfBodies; i++) {
+    x[i][0] += timeStepSize * v[i][0];
+    x[i][1] += timeStepSize * v[i][1];
+    x[i][2] += timeStepSize * v[i][2];
 
-        v[i][0] += timeStepSize * force0[i] / mass[i];
-        v[i][1] += timeStepSize * force1[i] / mass[i];
-        v[i][2] += timeStepSize * force2[i] / mass[i];
+    v[i][0] += timeStepSize * force0[i] / mass[i];
+    v[i][1] += timeStepSize * force1[i] / mass[i];
+    v[i][2] += timeStepSize * force2[i] / mass[i];
 
-        const double v_x = v[i][0];
-        const double v_y = v[i][1];
-        const double v_z = v[i][2];
-        maxV = std::max( maxV, std::sqrt( (v_x*v_x) + (v_y*v_y) + (v_z*v_z) ) );
-    }
+    maxV = std::max(maxV, std::sqrt( v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2] ));
+  }
 
-    t += timeStepSize;
+  t += timeStepSize;
 
-    delete[] force0;
-    delete[] force1;
-    delete[] force2;
+  delete[] force0;
+  delete[] force1;
+  delete[] force2;
 }
 
 
@@ -250,58 +246,61 @@ void updateBody() {
  * Not to be changed in assignment.
  */
 int main(int argc, char** argv) {
-    if (argc==1) {
-        std::cerr << "usage: " + std::string(argv[0]) + " snapshot final-time dt objects" << std::endl
-            << "  snapshot        interval after how many time units to plot. Use 0 to switch off plotting" << std::endl
-            << "  final-time      simulated time (greater 0)" << std::endl
-            << "  dt              time step size (greater 0)" << std::endl
-            << std::endl
-            << "Examples:" << std::endl
-            << "0.01  100.0   0 0 0 1.0   0   0 1.0 \t One body moving form the coordinate system's centre along x axis with speed 1" << std::endl
-            << "0.01  100.0   0 0 0 1.0   0   0 1.0 0 1.0 0 1.0 0   0 1.0 \t One spiralling around the other one" << std::endl
-            << "0.01  100.0 3.0 0 0   0 1.0   0 0.4 0   0 0   0 0   0 0.2 2.0 0 0 0 0 0 1.0 \t Three body setup from first lecture" << std::endl
-            << std::endl
-            << "In this naive code, only the first body moves" << std::endl;
+  if (argc==1) {
+    std::cerr << "usage: " + std::string(argv[0]) + " snapshot final-time dt objects" << std::endl
+              << "  snapshot        interval after how many time units to plot. Use 0 to switch off plotting" << std::endl
+              << "  final-time      simulated time (greater 0)" << std::endl
+              << "  dt              time step size (greater 0)" << std::endl
+              << std::endl
+              << "Examples:" << std::endl
+              << "0.01  100.0  0.001    0.0 0.0 0.0  1.0 0.0 0.0  1.0 \t One body moving form the coordinate system's centre along x axis with speed 1" << std::endl
+              << "0.01  100.0  0.001    0.0 0.0 0.0  1.0 0.0 0.0  1.0     0.0 1.0 0.0  1.0 0.0 0.0  1.0  \t One spiralling around the other one" << std::endl
+              << "0.01  100.0  0.001    3.0 0.0 0.0  0.0 1.0 0.0  0.4     0.0 0.0 0.0  0.0 0.0 0.0  0.2     2.0 0.0 0.0  0.0 0.0 0.0  1.0 \t Three body setup from first lecture" << std::endl
+              << "0.01  100.0  0.001    3.0 0.0 0.0  0.0 1.0 0.0  0.4     0.0 0.0 0.0  0.0 0.0 0.0  0.2     2.0 0.0 0.0  0.0 0.0 0.0  1.0     2.0 1.0 0.0  0.0 0.0 0.0  1.0     2.0 0.0 1.0  0.0 0.0 0.0  1.0 \t Five body setup" << std::endl
+              << std::endl
+              << "In this naive code, only the first body moves" << std::endl;
 
-        return -1;
+    return -1;
+  }
+  else if ( (argc-4)%7!=0 ) {
+    std::cerr << "error in arguments: each planet is given by seven entries (position, velocity, mass)" << std::endl;
+    std::cerr << "got " << argc << " arguments (three of them are reserved)" << std::endl;
+    std::cerr << "run without arguments for usage instruction" << std::endl;
+    return -2;
+  }
+
+  std::cout << std::setprecision(15);
+
+  setUp(argc,argv);
+
+  openParaviewVideoFile();
+
+  int snapshotCounter = 0;
+  if (t > tPlot) {
+    printParaviewSnapshot();
+    std::cout << "plotted initial setup" << std::endl;
+    tPlot = tPlotDelta;
+  }
+
+  int timeStepCounter = 0;
+  while (t<=tFinal) {
+    updateBody();
+    timeStepCounter++;
+    if (t >= tPlot) {
+      printParaviewSnapshot();
+      std::cout << "plot next snapshot"
+    		    << ",\t time step=" << timeStepCounter
+    		    << ",\t t="         << t
+				<< ",\t dt="        << timeStepSize
+				<< ",\t v_max="     << maxV
+				<< ",\t dx_min="    << minDx
+				<< std::endl;
+
+      tPlot += tPlotDelta;
     }
-    else if ( (argc-4)%7!=0 ) {
-        std::cerr << "error in arguments: each planet is given by seven entries (position, velocity, mass)" << std::endl;
-        return -2;
-    }
+  }
 
-    std::cout << std::setprecision(15);
+  closeParaviewVideoFile();
 
-    setUp(argc,argv);
-
-    openParaviewVideoFile();
-
-    int snapshotCounter = 0;
-    if (t > tPlot) {
-        printParaviewSnapshot();
-        std::cout << "plotted initial setup" << std::endl;
-        tPlot = tPlotDelta;
-    }
-
-    int timeStepCounter = 0;
-    while (t<=tFinal) {
-        updateBody();
-        timeStepCounter++;
-        if (t >= tPlot) {
-            printParaviewSnapshot();
-            std::cout << "plot next snapshot"
-                << ",\t time step=" << timeStepCounter
-                << ",\t t="         << t
-                << ",\t dt="        << timeStepSize
-                << ",\t v_max="     << maxV
-                << ",\t dx_min="    << minDx
-                << std::endl;
-
-            tPlot += tPlotDelta;
-        }
-    }
-
-    closeParaviewVideoFile();
-
-    return 0;
+  return 0;
 }
