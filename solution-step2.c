@@ -236,25 +236,37 @@ void updateBody() {
       const double dz = x[j][2] - x[i][2];
       const double distance_squared = dx*dx + dy*dy + dz*dz;
 
-      if (distance_squared < (0.01*0.01)) {
-        printf("%f, %f, %f | %f, %f, %f | %f\n", x[i][0], x[i][1], x[i][2], x[j][0], x[j][1], x[j][2], std::sqrt(distance_squared));
+      // No collision, just continue
+      if (distance_squared >= (0.01*0.01))
+        continue;
 
-        const double denom = mass[i] + mass[j];
-        const double weight_i = mass[i] / denom;
-        const double weight_j = mass[j] / denom;
+      std::cout << x[i][0] << ","
+        << x[i][1] << ","
+        << x[i][2] << ","
+        << x[j][0] << ","
+        << x[j][1] << ","
+        << x[j][2] << ","
+        << distance_squared << std::endl;
 
-        v[i][0] = v[i][0] * weight_i + v[j][0] * weight_j;
-        v[i][1] = v[i][1] * weight_i + v[j][1] * weight_j;
-        v[i][2] = v[i][2] * weight_i + v[j][2] * weight_j;
+      const double denom = mass[i] + mass[j];
+      const double weight_i = mass[i] / denom;
+      const double weight_j = mass[j] / denom;
 
-        // Need to shift the array
-        for (int k = j; k < NumberOfBodies - 1; k++) {
-          x[k] = x[k + 1];
-          v[k] = v[k + 1];
-          mass[k] = mass[k + 1];
-        }
-        NumberOfBodies--;
+      x[i][0] = x[i][0] * weight_i + x[j][0] * weight_j;
+      x[i][1] = x[i][1] * weight_i + x[j][1] * weight_j;
+      x[i][2] = x[i][2] * weight_i + x[j][2] * weight_j;
+
+      v[i][0] = v[i][0] * weight_i + v[j][0] * weight_j;
+      v[i][1] = v[i][1] * weight_i + v[j][1] * weight_j;
+      v[i][2] = v[i][2] * weight_i + v[j][2] * weight_j;
+
+      // Need to shift the array
+      for (int k = j; k < NumberOfBodies - 1; k++) {
+        x[k] = x[k + 1];
+        v[k] = v[k + 1];
+        mass[k] = mass[k + 1];
       }
+      NumberOfBodies--;
     }
   }
 
@@ -330,7 +342,7 @@ int main(int argc, char** argv) {
 
   closeParaviewVideoFile();
   if (NumberOfBodies == 1) {
-    printf("%f, %f, %f\n", x[0][0], x[0][1], x[0][2]);
+    std::cout << x[0][0] << "," << x[0][1] << "," << x[0][2] << std::endl;
   }
 
   return 0;
