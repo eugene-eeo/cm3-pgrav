@@ -1,3 +1,5 @@
 results/*.vtp
 results/*.pvd
 bins/*
+/solution-step1
+/solution-step2

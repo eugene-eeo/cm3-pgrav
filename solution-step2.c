@@ -26,6 +26,7 @@ double tFinal     = 0;
 double tPlot      = 0;
 double tPlotDelta = 0;
 
+int snapshotCounter = 0;
 int NumberOfBodies = 0;
 
 /**
@@ -174,7 +175,6 @@ void printParaviewSnapshot() {
 }
 
 
-
 /**
  * This is the only operation you are allowed to change in the assignment.
  */
@@ -188,10 +188,6 @@ void updateBody() {
   double* force0 = new double[NumberOfBodies]();
   double* force1 = new double[NumberOfBodies]();
   double* force2 = new double[NumberOfBodies]();
-
-  /* force0[0] = 0.0; */
-  /* force1[0] = 0.0; */
-  /* force2[0] = 0.0; */
 
   for (int i = 0; i < NumberOfBodies; i++) {
     for (int j = i+1; j < NumberOfBodies; j++) {
@@ -230,6 +226,36 @@ void updateBody() {
     v[i][2] += timeStepSize * force2[i] / mass[i];
 
     maxV = std::max(maxV, std::sqrt( v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2] ));
+  }
+
+  // Object collision
+  for (int i = 0; i < NumberOfBodies; i++) {
+    for (int j = i + 1; j < NumberOfBodies; j++) {
+      const double dx = x[j][0] - x[i][0];
+      const double dy = x[j][1] - x[i][1];
+      const double dz = x[j][2] - x[i][2];
+      const double distance_squared = dx*dx + dy*dy + dz*dz;
+
+      if (distance_squared < (0.01*0.01)) {
+        printf("%f, %f, %f | %f, %f, %f | %f\n", x[i][0], x[i][1], x[i][2], x[j][0], x[j][1], x[j][2], std::sqrt(distance_squared));
+
+        const double denom = mass[i] + mass[j];
+        const double weight_i = mass[i] / denom;
+        const double weight_j = mass[j] / denom;
+
+        v[i][0] = v[i][0] * weight_i + v[j][0] * weight_j;
+        v[i][1] = v[i][1] * weight_i + v[j][1] * weight_j;
+        v[i][2] = v[i][2] * weight_i + v[j][2] * weight_j;
+
+        // Need to shift the array
+        for (int k = j; k < NumberOfBodies - 1; k++) {
+          x[k] = x[k + 1];
+          v[k] = v[k + 1];
+          mass[k] = mass[k + 1];
+        }
+        NumberOfBodies--;
+      }
+    }
   }
 
   t += timeStepSize;
@@ -275,7 +301,7 @@ int main(int argc, char** argv) {
 
   openParaviewVideoFile();
 
-  int snapshotCounter = 0;
+  /* int snapshotCounter = 0; */
   if (t > tPlot) {
     printParaviewSnapshot();
     std::cout << "plotted initial setup" << std::endl;
@@ -283,12 +309,13 @@ int main(int argc, char** argv) {
   }
 
   int timeStepCounter = 0;
-  while (t<=tFinal) {
+  while (t<=tFinal && NumberOfBodies > 1) {
     updateBody();
     timeStepCounter++;
     if (t >= tPlot) {
       printParaviewSnapshot();
       std::cout << "plot next snapshot"
+                    << ",\t num=" << snapshotCounter
     		    << ",\t time step=" << timeStepCounter
     		    << ",\t t="         << t
 				<< ",\t dt="        << timeStepSize
@@ -296,11 +323,15 @@ int main(int argc, char** argv) {
 				<< ",\t dx_min="    << minDx
 				<< std::endl;
 
+      snapshotCounter++;
       tPlot += tPlotDelta;
     }
   }
 
   closeParaviewVideoFile();
+  if (NumberOfBodies == 1) {
+    printf("%f, %f, %f\n", x[0][0], x[0][1], x[0][2]);
+  }
 
   return 0;
 }
