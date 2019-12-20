@@ -291,6 +291,8 @@ void updateBody() {
       const double weight_i = mass[i] / denom;
       const double weight_j = mass[j] / denom;
 
+      mass[i] = denom;
+
       x[i][0] = x[i][0] * weight_i + x[j][0] * weight_j;
       x[i][1] = x[i][1] * weight_i + x[j][1] * weight_j;
       x[i][2] = x[i][2] * weight_i + x[j][2] * weight_j;

@@ -4,3 +4,6 @@ bins/*
 /solution-step1
 /solution-step2
 /solution-step3
+/*.vtp
+/*.csv
+/*.pvd
