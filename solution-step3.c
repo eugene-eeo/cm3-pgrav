@@ -29,6 +29,11 @@ double tPlotDelta = 0;
 int snapshotCounter = 0;
 int NumberOfBodies = 0;
 
+const int NumberOfBuckets = 10;
+const double vBucket = 61 / NumberOfBuckets;
+
+int** buckets;
+
 /**
  * Pointer to pointers. Each pointer in turn points to three coordinates, i.e.
  * each pointer represents one molecule/particle/body.
@@ -97,6 +102,11 @@ void setUp(int argc, char** argv) {
       std::cerr << "invalid mass for body " << i << std::endl;
       exit(-2);
     }
+  }
+
+  buckets = new int*[NumberOfBuckets];
+  for (int i = 0; i < NumberOfBuckets; i++) {
+    buckets[i] = new int[NumberOfBodies]();
   }
 
   std::cout << "created setup with " << NumberOfBodies << " bodies" << std::endl;
@@ -189,43 +199,80 @@ void updateBody() {
   double* force1 = new double[NumberOfBodies]();
   double* force2 = new double[NumberOfBodies]();
 
-  for (int i = 0; i < NumberOfBodies; i++) {
-    for (int j = i+1; j < NumberOfBodies; j++) {
-      const double dx = x[j][0] - x[i][0];
-      const double dy = x[j][1] - x[i][1];
-      const double dz = x[j][2] - x[i][2];
-
-      const double distance_squared = dx*dx + dy*dy + dz*dz;
-      const double distance = sqrt(distance_squared);
-      const double multiple = mass[j] * mass[i] / (distance_squared * distance);
-
-      const double force_x = dx * multiple;
-      const double force_y = dy * multiple;
-      const double force_z = dz * multiple;
-
-      // x,y,z forces acting on particle i
-      force0[i] += force_x;
-      force1[i] += force_y;
-      force2[i] += force_z;
-
-      force0[j] -= force_x;
-      force1[j] -= force_y;
-      force2[j] -= force_z;
-
-      minDx = std::min( minDx,distance );
+  // Clear buckets
+  for (int j = 0; j < NumberOfBuckets; j++) {
+    int* bucket = buckets[j];
+    for (int i = 0; i < NumberOfBodies; i++) {
+      bucket[i] = 0;
     }
   }
 
+  // Put particles into buckets
   for (int i = 0; i < NumberOfBodies; i++) {
-    x[i][0] += timeStepSize * v[i][0];
-    x[i][1] += timeStepSize * v[i][1];
-    x[i][2] += timeStepSize * v[i][2];
+    const double vi = std::sqrt( v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2] );
+    // Buckets
+    int found = 0;
+    for (int j = 0; j < NumberOfBuckets-1; j++) {
+      if ((j * vBucket <= vi) && (vi < (j+1)*vBucket)) {
+        buckets[j][i] = 1;
+        found = 1;
+        break;
+      }
+    }
+    if (!found) {
+      buckets[NumberOfBuckets - 1][i] = 1;
+    }
+  }
 
-    v[i][0] += timeStepSize * force0[i] / mass[i];
-    v[i][1] += timeStepSize * force1[i] / mass[i];
-    v[i][2] += timeStepSize * force2[i] / mass[i];
+  for (int bucketNum = 0; bucketNum < NumberOfBuckets; bucketNum++) {
+    const int times = 1 << bucketNum;
+    const int* bucket = buckets[bucketNum];
+    const double dt = timeStepSize / (double)times;
 
-    maxV = std::max(maxV, std::sqrt( v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2] ));
+    for (int tt = 0; tt < times; tt++) {
+      for (int i = 0; i < NumberOfBodies; i++) {
+        if (!bucket[i]) {
+          continue;
+        }
+        force0[i] = 0;
+        force1[i] = 0;
+        force2[i] = 0;
+
+        for (int j = 0; j < NumberOfBodies; j++) {
+          if (i == j) continue;
+
+          const double dx = x[j][0] - x[i][0];
+          const double dy = x[j][1] - x[i][1];
+          const double dz = x[j][2] - x[i][2];
+
+          const double distance_squared = dx*dx + dy*dy + dz*dz;
+          const double distance = sqrt(distance_squared);
+          const double multiple = mass[j] * mass[i] / (distance_squared * distance);
+
+          // x,y,z forces acting on particle i
+          force0[i] += dx * multiple;
+          force1[i] += dy * multiple;
+          force2[i] += dz * multiple;
+
+          minDx = std::min( minDx,distance );
+        }
+      }
+
+      for (int i = 0; i < NumberOfBodies; i++) {
+        if (!bucket[i]) {
+          continue;
+        }
+        x[i][0] += dt * v[i][0];
+        x[i][1] += dt * v[i][1];
+        x[i][2] += dt * v[i][2];
+
+        v[i][0] += dt * force0[i] / mass[i];
+        v[i][1] += dt * force1[i] / mass[i];
+        v[i][2] += dt * force2[i] / mass[i];
+
+        maxV = std::max(maxV, std::sqrt( v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2] ));
+      }
+    }
   }
 
   // Object collision
@@ -239,14 +286,6 @@ void updateBody() {
       // No collision, just continue
       if (distance_squared >= (0.01*0.01))
         continue;
-
-      /* std::cout << x[i][0] << "," */
-      /*   << x[i][1] << "," */
-      /*   << x[i][2] << "," */
-      /*   << x[j][0] << "," */
-      /*   << x[j][1] << "," */
-      /*   << x[j][2] << "," */
-      /*   << distance_squared << std::endl; */
 
       const double denom = mass[i] + mass[j];
       const double weight_i = mass[i] / denom;
@@ -266,6 +305,8 @@ void updateBody() {
         v[k] = v[k + 1];
         mass[k] = mass[k + 1];
       }
+      /* delete[] v[NumberOfBodies-1]; */
+      /* delete[] x[NumberOfBodies-1]; */
       NumberOfBodies--;
     }
   }
@@ -320,9 +361,11 @@ int main(int argc, char** argv) {
     tPlot = tPlotDelta;
   }
 
+  double globalMaxV = 0;
   int timeStepCounter = 0;
   while (t<=tFinal && NumberOfBodies > 1) {
     updateBody();
+    globalMaxV = std::max( globalMaxV, maxV );
     timeStepCounter++;
     if (t >= tPlot) {
       printParaviewSnapshot();
@@ -339,6 +382,8 @@ int main(int argc, char** argv) {
       tPlot += tPlotDelta;
     }
   }
+
+  std::cout << globalMaxV << std::endl;
 
   closeParaviewVideoFile();
   if (NumberOfBodies == 1) {
