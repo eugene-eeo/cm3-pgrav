@@ -30,7 +30,7 @@ int snapshotCounter = 0;
 int NumberOfBodies = 0;
 
 const int NumberOfBuckets = 10;
-const double vBucket = 61 / NumberOfBuckets;
+const double vBucket = 132 / NumberOfBuckets;
 
 int** buckets;
 
@@ -307,8 +307,6 @@ void updateBody() {
         v[k] = v[k + 1];
         mass[k] = mass[k + 1];
       }
-      /* delete[] v[NumberOfBodies-1]; */
-      /* delete[] x[NumberOfBodies-1]; */
       NumberOfBodies--;
     }
   }

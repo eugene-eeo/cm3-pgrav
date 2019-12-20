@@ -240,13 +240,13 @@ void updateBody() {
       if (distance_squared >= (0.01*0.01))
         continue;
 
-      std::cout << x[i][0] << ","
-        << x[i][1] << ","
-        << x[i][2] << ","
-        << x[j][0] << ","
-        << x[j][1] << ","
-        << x[j][2] << ","
-        << distance_squared << std::endl;
+      /* std::cout << x[i][0] << "," */
+      /*   << x[i][1] << "," */
+      /*   << x[i][2] << "," */
+      /*   << x[j][0] << "," */
+      /*   << x[j][1] << "," */
+      /*   << x[j][2] << "," */
+      /*   << distance_squared << std::endl; */
 
       const double denom = mass[i] + mass[j];
       const double weight_i = mass[i] / denom;
