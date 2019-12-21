@@ -211,17 +211,23 @@ void updateBody() {
   for (int i = 0; i < NumberOfBodies; i++) {
     const double vi = std::sqrt( v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2] );
     // Buckets
-    int found = 0;
-    for (int j = 0; j < NumberOfBuckets-1; j++) {
-      if ((j * vBucket <= vi) && (vi < (j+1)*vBucket)) {
+    for (int j = NumberOfBuckets - 1; j >= 0; j--) {
+      if (vi >= (j * vBucket)) {
         buckets[j][i] = 1;
-        found = 1;
         break;
       }
     }
-    if (!found) {
-      buckets[NumberOfBuckets - 1][i] = 1;
-    }
+    /* int found = 1; */
+    /* for (int j = 0; j < NumberOfBuckets-1; j++) { */
+    /*   if ((j * vBucket <= vi) && (vi < (j+1)*vBucket)) { */
+    /*     buckets[j][i] = 1; */
+    /*     found = 1; */
+    /*     break; */
+    /*   } */
+    /* } */
+    /* if (!found) { */
+    /*   buckets[NumberOfBuckets - 1][i] = 1; */
+    /* } */
   }
 
   for (int bucketNum = 0; bucketNum < NumberOfBuckets; bucketNum++) {
