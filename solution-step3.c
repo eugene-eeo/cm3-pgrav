@@ -209,25 +209,14 @@ void updateBody() {
 
   // Put particles into buckets
   for (int i = 0; i < NumberOfBodies; i++) {
-    const double vi = std::sqrt( v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2] );
+    const double vi = v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2];
     // Buckets
     for (int j = NumberOfBuckets - 1; j >= 0; j--) {
-      if (vi >= (j * vBucket)) {
+      if (vi >= ((j * vBucket) * (j * vBucket))) {
         buckets[j][i] = 1;
         break;
       }
     }
-    /* int found = 1; */
-    /* for (int j = 0; j < NumberOfBuckets-1; j++) { */
-    /*   if ((j * vBucket <= vi) && (vi < (j+1)*vBucket)) { */
-    /*     buckets[j][i] = 1; */
-    /*     found = 1; */
-    /*     break; */
-    /*   } */
-    /* } */
-    /* if (!found) { */
-    /*   buckets[NumberOfBuckets - 1][i] = 1; */
-    /* } */
   }
 
   for (int bucketNum = 0; bucketNum < NumberOfBuckets; bucketNum++) {
@@ -276,10 +265,12 @@ void updateBody() {
         v[i][1] += dt * force1[i] / mass[i];
         v[i][2] += dt * force2[i] / mass[i];
 
-        maxV = std::max(maxV, std::sqrt( v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2] ));
+        maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
       }
     }
   }
+
+  maxV = std::sqrt(maxV);
 
   // Object collision
   for (int i = 0; i < NumberOfBodies; i++) {

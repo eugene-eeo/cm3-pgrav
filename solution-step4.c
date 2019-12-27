@@ -59,10 +59,6 @@ double   maxV;
  */
 double   minDx;
 
-/** Forces */
-double* force0;
-double* force1;
-double* force2;
 
 /**
  * Set up scenario from the command line.
@@ -75,10 +71,6 @@ void setUp(int argc, char** argv) {
   x    = new double*[NumberOfBodies];
   v    = new double*[NumberOfBodies];
   mass = new double [NumberOfBodies];
-
-  force0 = new double[NumberOfBodies];
-  force1 = new double[NumberOfBodies];
-  force2 = new double[NumberOfBodies];
 
   int readArgument = 1;
 
@@ -197,12 +189,17 @@ void updateBody() {
   double* force1 = new double[NumberOfBodies]();
   double* force2 = new double[NumberOfBodies]();
 
-  /* force0[0] = 0.0; */
-  /* force1[0] = 0.0; */
-  /* force2[0] = 0.0; */
-
+  #pragma omp parallel
+  {
+  #pragma omp for reduction(min: minDx)
   for (int i = 0; i < NumberOfBodies; i++) {
-    for (int j = i+1; j < NumberOfBodies; j++) {
+    force0[i] = 0;
+    force1[i] = 0;
+    force2[i] = 0;
+
+    for (int j = 0; j < NumberOfBodies; j++) {
+      if (i == j) continue;
+
       const double dx = x[j][0] - x[i][0];
       const double dy = x[j][1] - x[i][1];
       const double dz = x[j][2] - x[i][2];
@@ -220,14 +217,13 @@ void updateBody() {
       force1[i] += force_y;
       force2[i] += force_z;
 
-      force0[j] -= force_x;
-      force1[j] -= force_y;
-      force2[j] -= force_z;
-
-      minDx = std::min( minDx,distance );
+      if (distance < minDx) {
+        minDx = distance;
+      }
     }
   }
 
+  #pragma omp for reduction(max: maxV)
   for (int i = 0; i < NumberOfBodies; i++) {
     x[i][0] += timeStepSize * v[i][0];
     x[i][1] += timeStepSize * v[i][1];
@@ -237,7 +233,11 @@ void updateBody() {
     v[i][1] += timeStepSize * force1[i] / mass[i];
     v[i][2] += timeStepSize * force2[i] / mass[i];
 
-    maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
+    const double v2 = v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2];
+    if (v2 > maxV) {
+      maxV = v2;
+    }
+  }
   }
 
   maxV = std::sqrt(maxV);
