@@ -29,6 +29,11 @@ double tPlotDelta = 0;
 int snapshotCounter = 0;
 int NumberOfBodies = 0;
 
+const int NumberOfBuckets = 10;
+const double vBucket = 132 / NumberOfBuckets;
+
+int* bucket;
+
 /**
  * Pointer to pointers. Each pointer in turn points to three coordinates, i.e.
  * each pointer represents one molecule/particle/body.
@@ -98,6 +103,8 @@ void setUp(int argc, char** argv) {
       exit(-2);
     }
   }
+
+  bucket = new int[NumberOfBuckets]();
 
   std::cout << "created setup with " << NumberOfBodies << " bodies" << std::endl;
   
@@ -189,87 +196,108 @@ void updateBody() {
   double* force1 = new double[NumberOfBodies]();
   double* force2 = new double[NumberOfBodies]();
 
+  // Put particles into buckets
+  #pragma omp parallel for
   for (int i = 0; i < NumberOfBodies; i++) {
-    for (int j = i+1; j < NumberOfBodies; j++) {
-      const double dx = x[j][0] - x[i][0];
-      const double dy = x[j][1] - x[i][1];
-      const double dz = x[j][2] - x[i][2];
-
-      const double distance_squared = dx*dx + dy*dy + dz*dz;
-      const double distance = sqrt(distance_squared);
-      const double multiple = mass[j] * mass[i] / (distance_squared * distance);
-
-      const double force_x = dx * multiple;
-      const double force_y = dy * multiple;
-      const double force_z = dz * multiple;
-
-      // x,y,z forces acting on particle i
-      force0[i] += force_x;
-      force1[i] += force_y;
-      force2[i] += force_z;
-
-      force0[j] -= force_x;
-      force1[j] -= force_y;
-      force2[j] -= force_z;
-
-      minDx = std::min(minDx, distance);
+    const double vi = v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2];
+    bucket[i] = 0;
+    for (int j = NumberOfBuckets - 1; j >= 1; j--) {
+      if (vi >= ((j * vBucket) * (j * vBucket))) {
+        bucket[i] = j;
+        break;
+      }
     }
   }
 
-  for (int i = 0; i < NumberOfBodies; i++) {
-    x[i][0] += timeStepSize * v[i][0];
-    x[i][1] += timeStepSize * v[i][1];
-    x[i][2] += timeStepSize * v[i][2];
+  for (int bucketNum = 0; bucketNum < NumberOfBuckets; bucketNum++) {
+    const int times = 1 << bucketNum;
+    const double dt = timeStepSize / (double)times;
 
-    v[i][0] += timeStepSize * force0[i] / mass[i];
-    v[i][1] += timeStepSize * force1[i] / mass[i];
-    v[i][2] += timeStepSize * force2[i] / mass[i];
+    for (int tt = 0; tt < times; tt++) {
+      #pragma omp parallel for reduction(min: minDx)
+      for (int i = 0; i < NumberOfBodies; i++) {
+        if (bucket[i] != bucketNum) {
+          continue;
+        }
+        force0[i] = 0;
+        force1[i] = 0;
+        force2[i] = 0;
 
-    maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
+        for (int j = 0; j < NumberOfBodies; j++) {
+          if (i == j) continue;
+
+          const double dx = x[j][0] - x[i][0];
+          const double dy = x[j][1] - x[i][1];
+          const double dz = x[j][2] - x[i][2];
+
+          const double distance_squared = dx*dx + dy*dy + dz*dz;
+          const double distance = sqrt(distance_squared);
+          const double multiple = mass[j] * mass[i] / (distance_squared * distance);
+
+          // x,y,z forces acting on particle i
+          force0[i] += dx * multiple;
+          force1[i] += dy * multiple;
+          force2[i] += dz * multiple;
+
+          minDx = std::min( minDx,distance );
+        }
+      }
+
+      #pragma omp parallel for reduction(max: maxV)
+      for (int i = 0; i < NumberOfBodies; i++) {
+        if (bucket[i] != bucketNum) {
+          continue;
+        }
+        x[i][0] += dt * v[i][0];
+        x[i][1] += dt * v[i][1];
+        x[i][2] += dt * v[i][2];
+
+        v[i][0] += dt * force0[i] / mass[i];
+        v[i][1] += dt * force1[i] / mass[i];
+        v[i][2] += dt * force2[i] / mass[i];
+
+        maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
+      }
+
+      // Object collision
+      for (int i = 0; i < NumberOfBodies; i++) {
+        if (bucket[i] != bucketNum) {
+          continue;
+        }
+        for (int j = i + 1; j < NumberOfBodies; j++) {
+          const double dx = x[j][0] - x[i][0];
+          const double dy = x[j][1] - x[i][1];
+          const double dz = x[j][2] - x[i][2];
+          const double distance_squared = dx*dx + dy*dy + dz*dz;
+
+          // No collision, just continue
+          if (distance_squared >= (0.01*0.01))
+            continue;
+
+          const double denom = mass[i] + mass[j];
+          const double weight_i = mass[i] / denom;
+          const double weight_j = mass[j] / denom;
+
+          mass[i] = denom;
+
+          x[i][0] = x[i][0] * weight_i + x[j][0] * weight_j;
+          x[i][1] = x[i][1] * weight_i + x[j][1] * weight_j;
+          x[i][2] = x[i][2] * weight_i + x[j][2] * weight_j;
+
+          v[i][0] = v[i][0] * weight_i + v[j][0] * weight_j;
+          v[i][1] = v[i][1] * weight_i + v[j][1] * weight_j;
+          v[i][2] = v[i][2] * weight_i + v[j][2] * weight_j;
+
+          x[j] = x[NumberOfBodies - 1];
+          v[j] = v[NumberOfBodies - 1];
+          bucket[j] = bucket[NumberOfBodies - 1];
+          NumberOfBodies--;
+        }
+      }
+    }
   }
 
   maxV = std::sqrt(maxV);
-
-  // Object collision
-  for (int i = 0; i < NumberOfBodies; i++) {
-    for (int j = i + 1; j < NumberOfBodies; j++) {
-      const double dx = x[j][0] - x[i][0];
-      const double dy = x[j][1] - x[i][1];
-      const double dz = x[j][2] - x[i][2];
-      const double distance_squared = dx*dx + dy*dy + dz*dz;
-
-      // No collision, just continue
-      if (distance_squared >= (0.01*0.01))
-        continue;
-
-      /* std::cout << x[i][0] << "," */
-      /*   << x[i][1] << "," */
-      /*   << x[i][2] << "," */
-      /*   << x[j][0] << "," */
-      /*   << x[j][1] << "," */
-      /*   << x[j][2] << ","; */
-
-      const double denom = mass[i] + mass[j];
-      const double weight_i = mass[i] / denom;
-      const double weight_j = mass[j] / denom;
-
-      mass[i] = denom;
-
-      x[i][0] = x[i][0] * weight_i + x[j][0] * weight_j;
-      x[i][1] = x[i][1] * weight_i + x[j][1] * weight_j;
-      x[i][2] = x[i][2] * weight_i + x[j][2] * weight_j;
-
-      //std::cout << x[i][0] << "," << x[i][1] << "," << x[i][2] << std::endl;
-
-      v[i][0] = v[i][0] * weight_i + v[j][0] * weight_j;
-      v[i][1] = v[i][1] * weight_i + v[j][1] * weight_j;
-      v[i][2] = v[i][2] * weight_i + v[j][2] * weight_j;
-
-      x[j] = x[NumberOfBodies - 1];
-      v[j] = v[NumberOfBodies - 1];
-      NumberOfBodies--;
-    }
-  }
 
   t += timeStepSize;
 
