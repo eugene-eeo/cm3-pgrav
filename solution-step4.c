@@ -193,10 +193,6 @@ void updateBody() {
   {
   #pragma omp for reduction(min: minDx)
   for (int i = 0; i < NumberOfBodies; i++) {
-    force0[i] = 0;
-    force1[i] = 0;
-    force2[i] = 0;
-
     for (int j = 0; j < NumberOfBodies; j++) {
       if (i == j) continue;
 

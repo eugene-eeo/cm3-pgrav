@@ -32,7 +32,7 @@ int NumberOfBodies = 0;
 const int NumberOfBuckets = 10;
 const double vBucket = 132 / NumberOfBuckets;
 
-int** buckets;
+int* bucket;
 
 /**
  * Pointer to pointers. Each pointer in turn points to three coordinates, i.e.
@@ -104,10 +104,7 @@ void setUp(int argc, char** argv) {
     }
   }
 
-  buckets = new int*[NumberOfBuckets];
-  for (int i = 0; i < NumberOfBuckets; i++) {
-    buckets[i] = new int[NumberOfBodies]();
-  }
+  bucket = new int[NumberOfBuckets]();
 
   std::cout << "created setup with " << NumberOfBodies << " bodies" << std::endl;
   
@@ -199,21 +196,13 @@ void updateBody() {
   double* force1 = new double[NumberOfBodies]();
   double* force2 = new double[NumberOfBodies]();
 
-  // Clear buckets
-  for (int j = 0; j < NumberOfBuckets; j++) {
-    int* bucket = buckets[j];
-    for (int i = 0; i < NumberOfBodies; i++) {
-      bucket[i] = 0;
-    }
-  }
-
   // Put particles into buckets
   for (int i = 0; i < NumberOfBodies; i++) {
     const double vi = v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2];
-    // Buckets
-    for (int j = NumberOfBuckets - 1; j >= 0; j--) {
+    bucket[i] = 0;
+    for (int j = NumberOfBuckets - 1; j >= 1; j--) {
       if (vi >= ((j * vBucket) * (j * vBucket))) {
-        buckets[j][i] = 1;
+        bucket[i] = j;
         break;
       }
     }
@@ -221,12 +210,11 @@ void updateBody() {
 
   for (int bucketNum = 0; bucketNum < NumberOfBuckets; bucketNum++) {
     const int times = 1 << bucketNum;
-    const int* bucket = buckets[bucketNum];
     const double dt = timeStepSize / (double)times;
 
     for (int tt = 0; tt < times; tt++) {
       for (int i = 0; i < NumberOfBodies; i++) {
-        if (!bucket[i]) {
+        if (bucket[i] != bucketNum) {
           continue;
         }
         force0[i] = 0;
@@ -254,7 +242,7 @@ void updateBody() {
       }
 
       for (int i = 0; i < NumberOfBodies; i++) {
-        if (!bucket[i]) {
+        if (bucket[i] != bucketNum) {
           continue;
         }
         x[i][0] += dt * v[i][0];
@@ -267,46 +255,46 @@ void updateBody() {
 
         maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
       }
+
+      // Object collision
+      for (int i = 0; i < NumberOfBodies; i++) {
+        if (bucket[i] != bucketNum) {
+          continue;
+        }
+        for (int j = i + 1; j < NumberOfBodies; j++) {
+          const double dx = x[j][0] - x[i][0];
+          const double dy = x[j][1] - x[i][1];
+          const double dz = x[j][2] - x[i][2];
+          const double distance_squared = dx*dx + dy*dy + dz*dz;
+
+          // No collision, just continue
+          if (distance_squared >= (0.01*0.01))
+            continue;
+
+          const double denom = mass[i] + mass[j];
+          const double weight_i = mass[i] / denom;
+          const double weight_j = mass[j] / denom;
+
+          mass[i] = denom;
+
+          x[i][0] = x[i][0] * weight_i + x[j][0] * weight_j;
+          x[i][1] = x[i][1] * weight_i + x[j][1] * weight_j;
+          x[i][2] = x[i][2] * weight_i + x[j][2] * weight_j;
+
+          v[i][0] = v[i][0] * weight_i + v[j][0] * weight_j;
+          v[i][1] = v[i][1] * weight_i + v[j][1] * weight_j;
+          v[i][2] = v[i][2] * weight_i + v[j][2] * weight_j;
+
+          x[j] = x[NumberOfBodies - 1];
+          v[j] = v[NumberOfBodies - 1];
+          bucket[j] = bucket[NumberOfBodies - 1];
+          NumberOfBodies--;
+        }
+      }
     }
   }
 
   maxV = std::sqrt(maxV);
-
-  // Object collision
-  for (int i = 0; i < NumberOfBodies; i++) {
-    for (int j = i + 1; j < NumberOfBodies; j++) {
-      const double dx = x[j][0] - x[i][0];
-      const double dy = x[j][1] - x[i][1];
-      const double dz = x[j][2] - x[i][2];
-      const double distance_squared = dx*dx + dy*dy + dz*dz;
-
-      // No collision, just continue
-      if (distance_squared >= (0.01*0.01))
-        continue;
-
-      const double denom = mass[i] + mass[j];
-      const double weight_i = mass[i] / denom;
-      const double weight_j = mass[j] / denom;
-
-      mass[i] = denom;
-
-      x[i][0] = x[i][0] * weight_i + x[j][0] * weight_j;
-      x[i][1] = x[i][1] * weight_i + x[j][1] * weight_j;
-      x[i][2] = x[i][2] * weight_i + x[j][2] * weight_j;
-
-      v[i][0] = v[i][0] * weight_i + v[j][0] * weight_j;
-      v[i][1] = v[i][1] * weight_i + v[j][1] * weight_j;
-      v[i][2] = v[i][2] * weight_i + v[j][2] * weight_j;
-
-      // Need to shift the array
-      for (int k = j; k < NumberOfBodies - 1; k++) {
-        x[k] = x[k + 1];
-        v[k] = v[k + 1];
-        mass[k] = mass[k + 1];
-      }
-      NumberOfBodies--;
-    }
-  }
 
   t += timeStepSize;
 
@@ -358,11 +346,9 @@ int main(int argc, char** argv) {
     tPlot = tPlotDelta;
   }
 
-  double globalMaxV = 0;
   int timeStepCounter = 0;
   while (t<=tFinal && NumberOfBodies > 1) {
     updateBody();
-    globalMaxV = std::max( globalMaxV, maxV );
     timeStepCounter++;
     if (t >= tPlot) {
       printParaviewSnapshot();
@@ -379,8 +365,6 @@ int main(int argc, char** argv) {
       tPlot += tPlotDelta;
     }
   }
-
-  std::cout << globalMaxV << std::endl;
 
   closeParaviewVideoFile();
   if (NumberOfBodies == 1) {
