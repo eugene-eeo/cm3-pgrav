@@ -60,6 +60,11 @@ double   maxV;
  */
 double   minDx;
 
+/** Forces */
+double* force0;
+double* force1;
+double* force2;
+
 
 /**
  * Set up scenario from the command line.
@@ -72,6 +77,10 @@ void setUp(int argc, char** argv) {
   x    = new double*[NumberOfBodies];
   v    = new double*[NumberOfBodies];
   mass = new double [NumberOfBodies];
+
+  force0 = new double[NumberOfBodies];
+  force1 = new double[NumberOfBodies];
+  force2 = new double[NumberOfBodies];
 
   int readArgument = 1;
 
@@ -182,12 +191,11 @@ void updateBody() {
   maxV   = 0.0;
   minDx  = std::numeric_limits<double>::max();
 
-  // force0 = force along x direction
-  // force1 = force along y direction
-  // force2 = force along z direction
-  double* force0 = new double[NumberOfBodies]();
-  double* force1 = new double[NumberOfBodies]();
-  double* force2 = new double[NumberOfBodies]();
+  for (int i = 0; i < NumberOfBodies; i++) {
+    force0[i] = 0.0;
+    force1[i] = 0.0;
+    force2[i] = 0.0;
+  }
 
   for (int i = 0; i < NumberOfBodies; i++) {
     for (int j = i+1; j < NumberOfBodies; j++) {
@@ -228,26 +236,26 @@ void updateBody() {
     maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
   }
 
-  maxV = std::sqrt(maxV);
-
   // Object collision
   for (int i = 0; i < NumberOfBodies; i++) {
-    for (int j = i + 1; j < NumberOfBodies; j++) {
+    for (int j = i + 1; j != i && j < NumberOfBodies;) {
       const double dx = x[j][0] - x[i][0];
       const double dy = x[j][1] - x[i][1];
       const double dz = x[j][2] - x[i][2];
       const double distance_squared = dx*dx + dy*dy + dz*dz;
 
       // No collision, just continue
-      if (distance_squared >= (0.01*0.01))
+      if (distance_squared > (0.01*0.01)) {
+        j++;
         continue;
+      }
 
       /* std::cout << x[i][0] << "," */
       /*   << x[i][1] << "," */
       /*   << x[i][2] << "," */
       /*   << x[j][0] << "," */
       /*   << x[j][1] << "," */
-      /*   << x[j][2] << ","; */
+      /*   << x[j][2] << std::endl; */
 
       const double denom = mass[i] + mass[j];
       const double weight_i = mass[i] / denom;
@@ -271,11 +279,8 @@ void updateBody() {
     }
   }
 
+  maxV = std::sqrt(maxV);
   t += timeStepSize;
-
-  delete[] force0;
-  delete[] force1;
-  delete[] force2;
 }
 
 
@@ -328,7 +333,6 @@ int main(int argc, char** argv) {
     if (t >= tPlot) {
       printParaviewSnapshot();
       std::cout << "plot next snapshot"
-                    << ",\t num=" << snapshotCounter
     		    << ",\t time step=" << timeStepCounter
     		    << ",\t t="         << t
 				<< ",\t dt="        << timeStepSize
@@ -336,7 +340,6 @@ int main(int argc, char** argv) {
 				<< ",\t dx_min="    << minDx
 				<< std::endl;
 
-      snapshotCounter++;
       tPlot += tPlotDelta;
     }
   }

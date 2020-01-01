@@ -59,6 +59,10 @@ double   maxV;
  */
 double   minDx;
 
+/** Forces */
+double* force0;
+double* force1;
+double* force2;
 
 /**
  * Set up scenario from the command line.
@@ -71,6 +75,10 @@ void setUp(int argc, char** argv) {
   x    = new double*[NumberOfBodies];
   v    = new double*[NumberOfBodies];
   mass = new double [NumberOfBodies];
+
+  force0 = new double[NumberOfBodies];
+  force1 = new double[NumberOfBodies];
+  force2 = new double[NumberOfBodies];
 
   int readArgument = 1;
 
@@ -182,12 +190,11 @@ void updateBody() {
   maxV   = 0.0;
   minDx  = std::numeric_limits<double>::max();
 
-  // force0 = force along x direction
-  // force1 = force along y direction
-  // force2 = force along z direction
-  double* force0 = new double[NumberOfBodies]();
-  double* force1 = new double[NumberOfBodies]();
-  double* force2 = new double[NumberOfBodies]();
+  for (int i = 0; i < NumberOfBodies; i++) {
+    force0[i] = 0.0;
+    force1[i] = 0.0;
+    force2[i] = 0.0;
+  }
 
   #pragma omp parallel
   {
@@ -204,18 +211,12 @@ void updateBody() {
       const double distance = std::sqrt(distance_squared);
       const double multiple = mass[j] * mass[i] / (distance_squared * distance);
 
-      const double force_x = dx * multiple;
-      const double force_y = dy * multiple;
-      const double force_z = dz * multiple;
-
       // x,y,z forces acting on particle i
-      force0[i] += force_x;
-      force1[i] += force_y;
-      force2[i] += force_z;
+      force0[i] += dx * multiple;
+      force1[i] += dy * multiple;
+      force2[i] += dz * multiple;
 
-      if (distance < minDx) {
-        minDx = distance;
-      }
+      minDx = std::min( minDx,distance );
     }
   }
 
@@ -229,19 +230,12 @@ void updateBody() {
     v[i][1] += timeStepSize * force1[i] / mass[i];
     v[i][2] += timeStepSize * force2[i] / mass[i];
 
-    const double v2 = v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2];
-    if (v2 > maxV) {
-      maxV = v2;
-    }
+    maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
   }
   }
 
   maxV = std::sqrt(maxV);
   t += timeStepSize;
-
-  delete[] force0;
-  delete[] force1;
-  delete[] force2;
 }
 
 

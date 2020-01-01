@@ -190,16 +190,11 @@ void updateBody() {
   maxV   = 0.0;
   minDx  = std::numeric_limits<double>::max();
 
-  // force0 = force along x direction
-  // force1 = force along y direction
-  // force2 = force along z direction
-  double* force0 = new double[NumberOfBodies]();
-  double* force1 = new double[NumberOfBodies]();
-  double* force2 = new double[NumberOfBodies]();
-
-  /* force0[0] = 0.0; */
-  /* force1[0] = 0.0; */
-  /* force2[0] = 0.0; */
+  for (int i = 0; i < NumberOfBodies; i++) {
+    force0[i] = 0.0;
+    force1[i] = 0.0;
+    force2[i] = 0.0;
+  }
 
   for (int i = 0; i < NumberOfBodies; i++) {
     for (int j = i+1; j < NumberOfBodies; j++) {
@@ -242,10 +237,6 @@ void updateBody() {
 
   maxV = std::sqrt(maxV);
   t += timeStepSize;
-
-  delete[] force0;
-  delete[] force1;
-  delete[] force2;
 }
 
 
