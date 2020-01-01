@@ -201,7 +201,7 @@ void updateBody() {
       const double dz = x[j][2] - x[i][2];
 
       const double distance_squared = dx*dx + dy*dy + dz*dz;
-      const double distance = sqrt(distance_squared);
+      const double distance = std::sqrt(distance_squared);
       const double multiple = mass[j] * mass[i] / (distance_squared * distance);
 
       const double force_x = dx * multiple;

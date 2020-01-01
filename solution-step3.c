@@ -104,7 +104,7 @@ void setUp(int argc, char** argv) {
     }
   }
 
-  bucket = new int[NumberOfBuckets]();
+  bucket = new int[NumberOfBodies]();
 
   std::cout << "created setup with " << NumberOfBodies << " bodies" << std::endl;
   
@@ -229,7 +229,7 @@ void updateBody() {
           const double dz = x[j][2] - x[i][2];
 
           const double distance_squared = dx*dx + dy*dy + dz*dz;
-          const double distance = sqrt(distance_squared);
+          const double distance = std::sqrt(distance_squared);
           const double multiple = mass[j] * mass[i] / (distance_squared * distance);
 
           // x,y,z forces acting on particle i

@@ -104,7 +104,7 @@ void setUp(int argc, char** argv) {
     }
   }
 
-  bucket = new int[NumberOfBuckets]();
+  bucket = new int[NumberOfBodies]();
 
   std::cout << "created setup with " << NumberOfBodies << " bodies" << std::endl;
   
@@ -214,7 +214,7 @@ void updateBody() {
     const double dt = timeStepSize / (double)times;
 
     for (int tt = 0; tt < times; tt++) {
-      #pragma omp parallel for reduction(min: minDx)
+      #pragma omp parallel for
       for (int i = 0; i < NumberOfBodies; i++) {
         if (bucket[i] != bucketNum) {
           continue;
@@ -231,7 +231,7 @@ void updateBody() {
           const double dz = x[j][2] - x[i][2];
 
           const double distance_squared = dx*dx + dy*dy + dz*dz;
-          const double distance = sqrt(distance_squared);
+          const double distance = std::sqrt(distance_squared);
           const double multiple = mass[j] * mass[i] / (distance_squared * distance);
 
           // x,y,z forces acting on particle i
@@ -239,11 +239,13 @@ void updateBody() {
           force1[i] += dy * multiple;
           force2[i] += dz * multiple;
 
-          minDx = std::min( minDx,distance );
+          if (distance < minDx) {
+            minDx = distance;
+          }
         }
       }
 
-      #pragma omp parallel for reduction(max: maxV)
+      #pragma omp parallel for
       for (int i = 0; i < NumberOfBodies; i++) {
         if (bucket[i] != bucketNum) {
           continue;
@@ -256,7 +258,10 @@ void updateBody() {
         v[i][1] += dt * force1[i] / mass[i];
         v[i][2] += dt * force2[i] / mass[i];
 
-        maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
+        const double v2 = v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2];
+        if (v2 > maxV) {
+          maxV = v2;
+        }
       }
 
       // Object collision
@@ -354,7 +359,7 @@ int main(int argc, char** argv) {
     updateBody();
     timeStepCounter++;
     if (t >= tPlot) {
-      printParaviewSnapshot();
+      /* printParaviewSnapshot(); */
       std::cout << "plot next snapshot"
                     << ",\t num=" << snapshotCounter
     		    << ",\t time step=" << timeStepCounter
