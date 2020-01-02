@@ -238,7 +238,7 @@ void updateBody() {
 
   maxV = std::sqrt(maxV);
   t += timeStepSize;
-  if (minDx >= 0.01)
+  if (minDx > 0.01)
     return;
 
   // Object collision
@@ -250,7 +250,7 @@ void updateBody() {
       const double distance_squared = dx*dx + dy*dy + dz*dz;
 
       // No collision, just continue
-      if (distance_squared >= (0.01*0.01)) {
+      if (distance_squared > (0.01*0.01)) {
         j++;
         continue;
       }

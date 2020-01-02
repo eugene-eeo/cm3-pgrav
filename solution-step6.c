@@ -272,7 +272,7 @@ void updateBody() {
         }
       }
 
-      if (iterationMinDx >= 0.01) continue;
+      if (iterationMinDx > 0.01) continue;
 
       // Object collision
       for (int i = 0; i < NumberOfBodies; i++) {
@@ -285,7 +285,7 @@ void updateBody() {
           const double distance_squared = dx*dx + dy*dy + dz*dz;
 
           // No collision, just continue
-          if (distance_squared >= (0.01*0.01)) {
+          if (distance_squared > (0.01*0.01)) {
             j++;
             continue;
           }
