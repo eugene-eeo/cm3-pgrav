@@ -219,7 +219,7 @@ void updateBody() {
 
   for (int bucketNum = 0; bucketNum <= maxBucket; bucketNum++) {
     const int times = 1 << bucketNum;
-    const double dt = timeStepSize / (double) times;
+    const double dt = timeStepSize / ((double) times);
 
     for (int iterationCount = 0; iterationCount < times; iterationCount++) {
       for (int i = 0; i < NumberOfBodies; i++) {
