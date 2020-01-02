@@ -222,6 +222,8 @@ void updateBody() {
     const double dt = timeStepSize / ((double) times);
 
     for (int iterationCount = 0; iterationCount < times; iterationCount++) {
+      double iterationMinDx = std::numeric_limits<double>::max();
+
       for (int i = 0; i < NumberOfBodies; i++) {
         if (bucket[i] != bucketNum) continue;
 
@@ -245,9 +247,11 @@ void updateBody() {
           force1[i] += dy * multiple;
           force2[i] += dz * multiple;
 
-          minDx = std::min(minDx, distance);
+          iterationMinDx = std::min(iterationMinDx, distance);
         }
       }
+
+      minDx = std::min(iterationMinDx, minDx);
 
       for (int i = 0; i < NumberOfBodies; i++) {
         if (bucket[i] != bucketNum) continue;
@@ -262,6 +266,8 @@ void updateBody() {
 
         maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
       }
+
+      if (iterationMinDx >= 0.01) continue;
 
       // Object collision
       for (int i = 0; i < NumberOfBodies; i++) {

@@ -236,6 +236,11 @@ void updateBody() {
     maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
   }
 
+  maxV = std::sqrt(maxV);
+  t += timeStepSize;
+  if (minDx >= 0.01)
+    return;
+
   // Object collision
   for (int i = 0; i < NumberOfBodies; i++) {
     for (int j = i + 1; j != i && j < NumberOfBodies;) {
@@ -245,7 +250,7 @@ void updateBody() {
       const double distance_squared = dx*dx + dy*dy + dz*dz;
 
       // No collision, just continue
-      if (distance_squared > (0.01*0.01)) {
+      if (distance_squared >= (0.01*0.01)) {
         j++;
         continue;
       }
@@ -267,8 +272,6 @@ void updateBody() {
       x[i][1] = x[i][1] * weight_i + x[j][1] * weight_j;
       x[i][2] = x[i][2] * weight_i + x[j][2] * weight_j;
 
-      //std::cout << x[i][0] << "," << x[i][1] << "," << x[i][2] << std::endl;
-
       v[i][0] = v[i][0] * weight_i + v[j][0] * weight_j;
       v[i][1] = v[i][1] * weight_i + v[j][1] * weight_j;
       v[i][2] = v[i][2] * weight_i + v[j][2] * weight_j;
@@ -278,9 +281,6 @@ void updateBody() {
       NumberOfBodies--;
     }
   }
-
-  maxV = std::sqrt(maxV);
-  t += timeStepSize;
 }
 
 

@@ -225,7 +225,9 @@ void updateBody() {
     const double dt = timeStepSize / ((double) times);
 
     for (int iterationCount = 0; iterationCount < times; iterationCount++) {
-      #pragma omp parallel for reduction(min: minDx)
+      double iterationMinDx = std::numeric_limits<double>::max();
+
+      #pragma omp parallel for reduction(min: iterationMinDx)
       for (int i = 0; i < NumberOfBodies; i++) {
         if (bucket[i] == bucketNum) {
           force0[i] = 0.0;
@@ -248,10 +250,12 @@ void updateBody() {
             force1[i] += dy * multiple;
             force2[i] += dz * multiple;
 
-            minDx = std::min(minDx, distance);
+            iterationMinDx = std::min(iterationMinDx, distance);
           }
         }
       }
+
+      minDx = std::min(minDx, iterationMinDx);
 
       #pragma omp parallel for reduction(max: maxV)
       for (int i = 0; i < NumberOfBodies; i++) {
@@ -267,6 +271,8 @@ void updateBody() {
           maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
         }
       }
+
+      if (iterationMinDx >= 0.01) continue;
 
       // Object collision
       for (int i = 0; i < NumberOfBodies; i++) {
