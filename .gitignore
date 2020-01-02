@@ -9,3 +9,5 @@ bins/*
 /*.vtp
 /*.csv
 /*.pvd
+/time-*.txt
+/x
