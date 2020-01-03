@@ -230,9 +230,9 @@ void updateBody() {
       #pragma omp parallel for reduction(min: iterationMinDx)
       for (int i = 0; i < NumberOfBodies; i++) {
         if (bucket[i] == bucketNum) {
-          force0[i] = 0.0;
-          force1[i] = 0.0;
-          force2[i] = 0.0;
+          double forcex = 0;
+          double forcey = 0;
+          double forcez = 0;
 
           for (int j = 0; j < NumberOfBodies; j++) {
             if (i == j) continue;
@@ -246,18 +246,22 @@ void updateBody() {
             const double multiple = mass[j] * mass[i] / (distance_squared * distance);
 
             // x,y,z forces acting on particle i
-            force0[i] += dx * multiple;
-            force1[i] += dy * multiple;
-            force2[i] += dz * multiple;
+            forcex += dx * multiple;
+            forcey += dy * multiple;
+            forcez += dz * multiple;
 
             iterationMinDx = std::min(iterationMinDx, distance);
           }
+
+          force0[i] = forcex;
+          force1[i] = forcey;
+          force2[i] = forcez;
         }
       }
 
       minDx = std::min(minDx, iterationMinDx);
 
-      #pragma omp parallel for reduction(max: maxV)
+      #pragma omp simd reduction(max: maxV)
       for (int i = 0; i < NumberOfBodies; i++) {
         if (bucket[i] == bucketNum) {
           x[i][0] += dt * v[i][0];

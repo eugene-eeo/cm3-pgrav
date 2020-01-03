@@ -190,13 +190,12 @@ void updateBody() {
   maxV   = 0.0;
   minDx  = std::numeric_limits<double>::max();
 
-  #pragma omp parallel
-  {
-  #pragma omp for reduction(min: minDx)
+  #pragma omp parallel for reduction(min: minDx)
   for (int i = 0; i < NumberOfBodies; i++) {
-    force0[i] = 0;
-    force1[i] = 0;
-    force2[i] = 0;
+    double forcex = 0;
+    double forcey = 0;
+    double forcez = 0;
+    double myMinDx = std::numeric_limits<double>::max();
 
     for (int j = 0; j < NumberOfBodies; j++) {
       if (i == j) continue;
@@ -210,15 +209,20 @@ void updateBody() {
       const double multiple = mass[j] * mass[i] / (distance_squared * distance);
 
       // x,y,z forces acting on particle i
-      force0[i] += dx * multiple;
-      force1[i] += dy * multiple;
-      force2[i] += dz * multiple;
+      forcex += dx * multiple;
+      forcey += dy * multiple;
+      forcez += dz * multiple;
 
-      minDx = std::min( minDx,distance );
+      myMinDx = std::min(myMinDx, distance);
     }
+
+    minDx = std::min(minDx, myMinDx);
+    force0[i] = forcex;
+    force1[i] = forcey;
+    force2[i] = forcez;
   }
 
-  #pragma omp for reduction(max: maxV)
+  #pragma omp simd reduction(max: maxV)
   for (int i = 0; i < NumberOfBodies; i++) {
     x[i][0] += timeStepSize * v[i][0];
     x[i][1] += timeStepSize * v[i][1];
@@ -229,7 +233,6 @@ void updateBody() {
     v[i][2] += timeStepSize * force2[i] / mass[i];
 
     maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
-  }
   }
 
   maxV = std::sqrt(maxV);
