@@ -60,15 +60,8 @@ double   maxV;
  */
 double   minDx;
 
-/** Forces */
-double* force0;
-double* force1;
-double* force2;
-
 /** Bucketing */
-int* bucket;
 int NumberOfBuckets = 10;
-double* bucketSpeedLimits;
 const double vBucket = 200 / NumberOfBuckets;
 
 
@@ -83,16 +76,6 @@ void setUp(int argc, char** argv) {
   x    = new double*[NumberOfBodies];
   v    = new double*[NumberOfBodies];
   mass = new double [NumberOfBodies];
-
-  force0 = new double[NumberOfBodies];
-  force1 = new double[NumberOfBodies];
-  force2 = new double[NumberOfBodies];
-
-  bucket = new int[NumberOfBodies];
-  bucketSpeedLimits = new double[NumberOfBuckets];
-  for (int j = NumberOfBuckets - 1; j >= 0; j--) {
-    bucketSpeedLimits[j] = (j * vBucket)*(j * vBucket);
-  }
 
   int readArgument = 1;
 
@@ -202,6 +185,16 @@ void printParaviewSnapshot() {
 void updateBody() {
   maxV   = 0.0;
   minDx  = std::numeric_limits<double>::max();
+
+  double* force0 = new double[NumberOfBodies];
+  double* force1 = new double[NumberOfBodies];
+  double* force2 = new double[NumberOfBodies];
+
+  int* bucket = new int[NumberOfBodies];
+  double* bucketSpeedLimits = new double[NumberOfBuckets];
+  for (int j = NumberOfBuckets - 1; j >= 0; j--) {
+    bucketSpeedLimits[j] = (j * vBucket)*(j * vBucket);
+  }
 
   int maxBucket = 0;
 
@@ -319,6 +312,12 @@ void updateBody() {
 
   maxV = std::sqrt(maxV);
   t += timeStepSize;
+
+  delete[] force0;
+  delete[] force1;
+  delete[] force2;
+  delete[] bucket;
+  delete[] bucketSpeedLimits;
 }
 
 

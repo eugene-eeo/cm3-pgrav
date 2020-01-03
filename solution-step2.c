@@ -60,11 +60,6 @@ double   maxV;
  */
 double   minDx;
 
-/** Forces */
-double* force0;
-double* force1;
-double* force2;
-
 
 /**
  * Set up scenario from the command line.
@@ -77,10 +72,6 @@ void setUp(int argc, char** argv) {
   x    = new double*[NumberOfBodies];
   v    = new double*[NumberOfBodies];
   mass = new double [NumberOfBodies];
-
-  force0 = new double[NumberOfBodies];
-  force1 = new double[NumberOfBodies];
-  force2 = new double[NumberOfBodies];
 
   int readArgument = 1;
 
@@ -191,6 +182,10 @@ void updateBody() {
   maxV   = 0.0;
   minDx  = std::numeric_limits<double>::max();
 
+  double* force0 = new double[NumberOfBodies];
+  double* force1 = new double[NumberOfBodies];
+  double* force2 = new double[NumberOfBodies];
+
   for (int i = 0; i < NumberOfBodies; i++) {
     force0[i] = 0.0;
     force1[i] = 0.0;
@@ -238,6 +233,11 @@ void updateBody() {
 
   maxV = std::sqrt(maxV);
   t += timeStepSize;
+
+  delete[] force0;
+  delete[] force1;
+  delete[] force2;
+
   if (minDx > 0.01)
     return;
 
