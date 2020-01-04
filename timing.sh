@@ -23,16 +23,18 @@ nums="1
 #     fi
 # done
 
+echo "serial"
 for thread_count in $nums; do
-    if [ "$thread_count" = 1 ]; then
-        for _ in $(seq 5); do
-            echo -n "1,"
-            command time -f '%e' ./solution-step1 $(cat "cond-cores-$thread_count.txt") 1> /dev/null
-        done
-    else
-        for _ in $(seq 5); do
-            echo -n "$thread_count,"
-            OMP_NUM_THREADS="$thread_count" command time -f '%e' ./solution-step4 $(cat "cond-cores-$thread_count.txt") 1> /dev/null
-        done
-    fi
+    for _ in $(seq 5); do
+        echo -n "$thread_count,"
+        command time -f '%e' ./solution-step1 $(cat "cond-cores-$thread_count.txt") 1> /dev/null
+    done
+done
+
+echo "parallel"
+for thread_count in $nums; do
+    for _ in $(seq 5); do
+        echo -n "$thread_count,"
+        OMP_NUM_THREADS="$thread_count" command time -f '%e' ./solution-step4 $(cat "cond-cores-$thread_count.txt") 1> /dev/null
+    done
 done

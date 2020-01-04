@@ -192,9 +192,11 @@ void updateBody() {
     force2[i] = 0;
   }
 
-  #pragma omp parallel for reduction(min: minDx) reduction(+: force0[:NumberOfBodies], force1[:NumberOfBodies], force2[:NumberOfBodies])
+  #pragma omp parallel for reduction(min: minDx)
   for (int i = 0; i < NumberOfBodies; i++) {
-    for (int j = i + 1; j < NumberOfBodies; j++) {
+    for (int j = 0; j < NumberOfBodies; j++) {
+      if (i == j) continue;
+
       const double dx = x[j][0] - x[i][0];
       const double dy = x[j][1] - x[i][1];
       const double dz = x[j][2] - x[i][2];
@@ -211,10 +213,6 @@ void updateBody() {
       force0[i] += forcex;
       force1[i] += forcey;
       force2[i] += forcez;
-
-      force0[j] -= forcex;
-      force1[j] -= forcey;
-      force2[j] -= forcez;
 
       minDx = std::min(minDx, distance);
     }

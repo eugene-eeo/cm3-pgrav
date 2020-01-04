@@ -278,13 +278,6 @@ void updateBody() {
             continue;
           }
 
-          /* std::cout << x[i][0] << "," */
-          /*   << x[i][1] << "," */
-          /*   << x[i][2] << "," */
-          /*   << x[j][0] << "," */
-          /*   << x[j][1] << "," */
-          /*   << x[j][2] << std::endl; */
-
           const double denom = mass[i] + mass[j];
           const double weight_i = mass[i] / denom;
           const double weight_j = mass[j] / denom;
@@ -294,8 +287,6 @@ void updateBody() {
           x[i][0] = x[i][0] * weight_i + x[j][0] * weight_j;
           x[i][1] = x[i][1] * weight_i + x[j][1] * weight_j;
           x[i][2] = x[i][2] * weight_i + x[j][2] * weight_j;
-
-          //std::cout << x[i][0] << "," << x[i][1] << "," << x[i][2] << std::endl;
 
           v[i][0] = v[i][0] * weight_i + v[j][0] * weight_j;
           v[i][1] = v[i][1] * weight_i + v[j][1] * weight_j;
