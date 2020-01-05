@@ -253,12 +253,12 @@ void updateBody() {
         continue;
       }
 
-      /* std::cout << x[i][0] << "," */
-      /*   << x[i][1] << "," */
-      /*   << x[i][2] << "," */
-      /*   << x[j][0] << "," */
-      /*   << x[j][1] << "," */
-      /*   << x[j][2] << std::endl; */
+      std::cout << x[i][0] << ","
+        << x[i][1] << ","
+        << x[i][2] << ","
+        << x[j][0] << ","
+        << x[j][1] << ","
+        << x[j][2] << std::endl;
 
       const double denom = mass[i] + mass[j];
       const double weight_i = mass[i] / denom;
@@ -276,7 +276,10 @@ void updateBody() {
 
       x[j] = x[NumberOfBodies - 1];
       v[j] = v[NumberOfBodies - 1];
+      mass[j] = mass[NumberOfBodies - 1];
       NumberOfBodies--;
+
+      maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
     }
   }
 }

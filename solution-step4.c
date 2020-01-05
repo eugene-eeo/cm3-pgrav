@@ -205,14 +205,10 @@ void updateBody() {
       const double distance = std::sqrt(distance_squared);
       const double multiple = mass[j] * mass[i] / (distance_squared * distance);
 
-      const double forcex = dx * multiple;
-      const double forcey = dy * multiple;
-      const double forcez = dz * multiple;
-
       // x,y,z forces acting on particle i
-      force0[i] += forcex;
-      force1[i] += forcey;
-      force2[i] += forcez;
+      force0[i] += dx * multiple;
+      force1[i] += dy * multiple;
+      force2[i] += dz * multiple;
 
       minDx = std::min(minDx, distance);
     }

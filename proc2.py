@@ -13,7 +13,7 @@ def distance(x0, y0, z0, x1, y1, z1):
 
 def main():
     r = csv.reader(sys.stdin)
-    next(r)
+    # next(r)
     print("timestep,distance")
     # others
     for i, tup in enumerate(r):

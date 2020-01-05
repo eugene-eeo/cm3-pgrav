@@ -46,6 +46,7 @@ def main():
 
     plt.scatter(xdata, ydata, c='b', label='data')
     plt.scatter(xdata, gustafson(xdata, f), c='r', label='fit: f=%5.3f' % f)
+    plt.grid()
     plt.xlabel('cores')
     plt.ylabel('scaled speedup')
     plt.legend()

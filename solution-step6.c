@@ -301,8 +301,10 @@ void updateBody() {
 
           x[j] = x[NumberOfBodies - 1];
           v[j] = v[NumberOfBodies - 1];
+          mass[j] = mass[NumberOfBodies - 1];
           bucket[j] = bucket[NumberOfBodies - 1];
           NumberOfBodies--;
+          maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
         }
       }
     }
