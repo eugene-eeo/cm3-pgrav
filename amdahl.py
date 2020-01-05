@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
 timing = [
-    (1, 89.35900000000001),
+    (1, 48.257),
     (2, 45.954),
     (2, 45.877),
     (3, 32.669),
@@ -324,6 +324,12 @@ def main():
 
     xdata = np.array(sorted(speedup.keys()))
     ydata = np.array([speedup[k] for k in xdata])
+
+    # xdata = np.array(sorted(info.keys()))
+    # ydata = np.array([info[k] for k in xdata])
+
+    # def amdahl(p, f):
+    #     return info[1] * f + (1 - f) * info[1] / p
 
     def amdahl(p, f):
         return 1 / (f + (1 - f) / p)
