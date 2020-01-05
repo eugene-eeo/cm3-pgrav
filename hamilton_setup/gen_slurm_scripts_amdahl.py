@@ -2,7 +2,7 @@ template = """#!/bin/csh
 #SBATCH --job-name="gs-{n}"
 #SBATCH -o eeojun.amdahl.{n}.out
 #SBATCH -e eeojun.amdahl.{n}.err
-#SBATCH -p par.q
+#SBATCH -p par7.q
 #SBATCH -t 01:00:00
 #SBATCH --exclusive
 #SBATCH --nodes=1
