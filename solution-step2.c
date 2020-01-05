@@ -223,59 +223,58 @@ void updateBody() {
     maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
   }
 
+  if (minDx <= 0.01) {
+    // Object collision
+    for (int i = 0; i < NumberOfBodies; i++) {
+      for (int j = i + 1; j != i && j < NumberOfBodies;) {
+        const double dx = x[j][0] - x[i][0];
+        const double dy = x[j][1] - x[i][1];
+        const double dz = x[j][2] - x[i][2];
+        const double distance_squared = dx*dx + dy*dy + dz*dz;
+
+        // No collision, just continue
+        if (distance_squared > (0.01*0.01)) {
+          j++;
+          continue;
+        }
+
+        /* std::cout << x[i][0] << "," */
+        /*   << x[i][1] << "," */
+        /*   << x[i][2] << "," */
+        /*   << x[j][0] << "," */
+        /*   << x[j][1] << "," */
+        /*   << x[j][2] << std::endl; */
+
+        const double denom = mass[i] + mass[j];
+        const double weight_i = mass[i] / denom;
+        const double weight_j = mass[j] / denom;
+
+        mass[i] = denom;
+
+        x[i][0] = x[i][0] * weight_i + x[j][0] * weight_j;
+        x[i][1] = x[i][1] * weight_i + x[j][1] * weight_j;
+        x[i][2] = x[i][2] * weight_i + x[j][2] * weight_j;
+
+        v[i][0] = v[i][0] * weight_i + v[j][0] * weight_j;
+        v[i][1] = v[i][1] * weight_i + v[j][1] * weight_j;
+        v[i][2] = v[i][2] * weight_i + v[j][2] * weight_j;
+
+        x[j] = x[NumberOfBodies - 1];
+        v[j] = v[NumberOfBodies - 1];
+        mass[j] = mass[NumberOfBodies - 1];
+        NumberOfBodies--;
+
+        maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
+      }
+    }
+  }
+
   maxV = std::sqrt(maxV);
   t += timeStepSize;
 
   delete[] force0;
   delete[] force1;
   delete[] force2;
-
-  if (minDx > 0.01)
-    return;
-
-  // Object collision
-  for (int i = 0; i < NumberOfBodies; i++) {
-    for (int j = i + 1; j != i && j < NumberOfBodies;) {
-      const double dx = x[j][0] - x[i][0];
-      const double dy = x[j][1] - x[i][1];
-      const double dz = x[j][2] - x[i][2];
-      const double distance_squared = dx*dx + dy*dy + dz*dz;
-
-      // No collision, just continue
-      if (distance_squared > (0.01*0.01)) {
-        j++;
-        continue;
-      }
-
-      std::cout << x[i][0] << ","
-        << x[i][1] << ","
-        << x[i][2] << ","
-        << x[j][0] << ","
-        << x[j][1] << ","
-        << x[j][2] << std::endl;
-
-      const double denom = mass[i] + mass[j];
-      const double weight_i = mass[i] / denom;
-      const double weight_j = mass[j] / denom;
-
-      mass[i] = denom;
-
-      x[i][0] = x[i][0] * weight_i + x[j][0] * weight_j;
-      x[i][1] = x[i][1] * weight_i + x[j][1] * weight_j;
-      x[i][2] = x[i][2] * weight_i + x[j][2] * weight_j;
-
-      v[i][0] = v[i][0] * weight_i + v[j][0] * weight_j;
-      v[i][1] = v[i][1] * weight_i + v[j][1] * weight_j;
-      v[i][2] = v[i][2] * weight_i + v[j][2] * weight_j;
-
-      x[j] = x[NumberOfBodies - 1];
-      v[j] = v[NumberOfBodies - 1];
-      mass[j] = mass[NumberOfBodies - 1];
-      NumberOfBodies--;
-
-      maxV = std::max(maxV, v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
-    }
-  }
 }
 
 

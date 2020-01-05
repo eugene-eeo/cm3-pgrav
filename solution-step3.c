@@ -264,9 +264,12 @@ void updateBody() {
 
       // Object collision
       for (int i = 0; i < NumberOfBodies; i++) {
-        if (bucket[i] != bucketNum) continue;
-
         for (int j = i + 1; j != i && j < NumberOfBodies;) {
+          if (bucket[i] != bucketNum && bucket[j] != bucketNum) {
+            j++;
+            continue;
+          }
+
           const double dx = x[j][0] - x[i][0];
           const double dy = x[j][1] - x[i][1];
           const double dz = x[j][2] - x[i][2];
