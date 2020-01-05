@@ -181,16 +181,9 @@ void updateBody() {
   maxV   = 0.0;
   minDx  = std::numeric_limits<double>::max();
 
-  double* force0 = new double[NumberOfBodies];
-  double* force1 = new double[NumberOfBodies];
-  double* force2 = new double[NumberOfBodies];
-
-  #pragma omp simd
-  for (int i= 0; i < NumberOfBodies; i++) {
-    force0[i] = 0;
-    force1[i] = 0;
-    force2[i] = 0;
-  }
+  double* force0 = new double[NumberOfBodies]();
+  double* force1 = new double[NumberOfBodies]();
+  double* force2 = new double[NumberOfBodies]();
 
   #pragma omp parallel for reduction(min: minDx)
   for (int i = 0; i < NumberOfBodies; i++) {
