@@ -30,6 +30,8 @@ def main():
             mins, secs = time.split('m')
             secs = secs.rstrip('s')
             total = int(mins) * 60 + float(secs)
+            if int(nproc) > 24:
+                continue
             mode[int(nproc)].append(total)
 
     s = {k: avg(v) for k, v in serial.items()}
@@ -38,6 +40,8 @@ def main():
     speedup = {}
     for k in s:
         speedup[k] = s[k] / p[k]
+
+    print(speedup)
 
     xdata = np.array(list(speedup.keys()))
     ydata = np.array(list(speedup.values()))
