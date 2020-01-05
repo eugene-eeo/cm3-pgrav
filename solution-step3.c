@@ -62,7 +62,6 @@ double   minDx;
 
 /** Bucketing */
 int NumberOfBuckets = 10;
-const double vBucket = 200 / NumberOfBuckets;
 
 
 /**
@@ -183,6 +182,8 @@ void printParaviewSnapshot() {
  * This is the only operation you are allowed to change in the assignment.
  */
 void updateBody() {
+  const double vBucket = maxV / (double)NumberOfBuckets;
+
   maxV   = 0.0;
   minDx  = std::numeric_limits<double>::max();
 
@@ -197,6 +198,7 @@ void updateBody() {
   }
 
   int maxBucket = 0;
+  int minBucket = 9;
 
   // Sort into buckets
   for (int i = 0; i < NumberOfBodies; i++) {
@@ -205,20 +207,23 @@ void updateBody() {
       if (velocity >= bucketSpeedLimits[j]) {
         bucket[i] = j;
         maxBucket = std::max(maxBucket, j);
+        minBucket = std::min(minBucket, j);
         break;
       }
     }
   }
 
-  for (int bucketNum = 0; bucketNum <= maxBucket; bucketNum++) {
+  for (int bucketNum = minBucket; bucketNum <= maxBucket; bucketNum++) {
     const int times = 1 << bucketNum;
     const double dt = timeStepSize / ((double) times);
 
     for (int iterationCount = 0; iterationCount < times; iterationCount++) {
       double iterationMinDx = std::numeric_limits<double>::max();
+      int numberOfParticles = 0;
 
       for (int i = 0; i < NumberOfBodies; i++) {
         if (bucket[i] != bucketNum) continue;
+        numberOfParticles += 1;
 
         force0[i] = 0.0;
         force1[i] = 0.0;
@@ -243,6 +248,9 @@ void updateBody() {
           iterationMinDx = std::min(iterationMinDx, distance);
         }
       }
+
+      if (numberOfParticles == 0)
+        break;
 
       minDx = std::min(iterationMinDx, minDx);
 

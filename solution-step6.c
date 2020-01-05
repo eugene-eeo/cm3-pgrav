@@ -62,7 +62,6 @@ double   minDx;
 
 /** Bucketing */
 int NumberOfBuckets = 10;
-const double vBucket = 200 / NumberOfBuckets;
 
 
 /**
@@ -183,6 +182,8 @@ void printParaviewSnapshot() {
  * This is the only operation you are allowed to change in the assignment.
  */
 void updateBody() {
+  const double vBucket = maxV / (double)NumberOfBuckets;
+
   maxV   = 0.0;
   minDx  = std::numeric_limits<double>::max();
 
@@ -190,15 +191,17 @@ void updateBody() {
   double* force1 = new double[NumberOfBodies];
   double* force2 = new double[NumberOfBodies];
 
-  int maxBucket = 0;
   int* bucket = new int[NumberOfBodies];
   double* bucketSpeedLimits = new double[NumberOfBuckets];
   for (int j = NumberOfBuckets - 1; j >= 0; j--) {
     bucketSpeedLimits[j] = (j * vBucket)*(j * vBucket);
   }
 
+  int maxBucket = 0;
+  int minBucket = 9;
+
   // Sort into buckets
-  #pragma omp parallel for reduction(max: maxBucket)
+  #pragma omp parallel for reduction(max: maxBucket) reduction(min: minBucket)
   for (int i = 0; i < NumberOfBodies; i++) {
     const double velocity = v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2];
     bucket[i] = 0;
@@ -206,24 +209,27 @@ void updateBody() {
       if (velocity >= bucketSpeedLimits[j]) {
         bucket[i] = j;
         maxBucket = std::max(maxBucket, j);
+        minBucket = std::min(minBucket, j);
         break;
       }
     }
   }
 
-  for (int bucketNum = 0; bucketNum <= maxBucket; bucketNum++) {
+  for (int bucketNum = minBucket; bucketNum <= maxBucket; bucketNum++) {
     const int times = 1 << bucketNum;
     const double dt = timeStepSize / ((double) times);
 
     for (int iterationCount = 0; iterationCount < times; iterationCount++) {
       double iterationMinDx = std::numeric_limits<double>::max();
+      int numberOfParticles = 0;
 
-      #pragma omp parallel for reduction(min: iterationMinDx)
+      #pragma omp parallel for reduction(min: iterationMinDx) reduction(+: numberOfParticles)
       for (int i = 0; i < NumberOfBodies; i++) {
         if (bucket[i] == bucketNum) {
           double forcex = 0;
           double forcey = 0;
           double forcez = 0;
+          numberOfParticles += 1;
 
           for (int j = 0; j < NumberOfBodies; j++) {
             if (i == j) continue;
@@ -250,9 +256,12 @@ void updateBody() {
         }
       }
 
+      if (numberOfParticles == 0)
+        break;
+
       minDx = std::min(minDx, iterationMinDx);
 
-      #pragma omp simd reduction(max: maxV)
+      #pragma omp for reduction(max: maxV)
       for (int i = 0; i < NumberOfBodies; i++) {
         if (bucket[i] == bucketNum) {
           x[i][0] += dt * v[i][0];

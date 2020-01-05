@@ -27,7 +27,10 @@ def main():
             mode = parallel
         else:
             nproc, time = line
-            mode[int(nproc)].append(float(time))
+            mins, secs = time.split('m')
+            secs = secs.rstrip('s')
+            total = int(mins) * 60 + float(secs)
+            mode[int(nproc)].append(total)
 
     s = {k: avg(v) for k, v in serial.items()}
     p = {k: avg(v) for k, v in parallel.items()}

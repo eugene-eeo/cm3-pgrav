@@ -17,20 +17,20 @@ params="0 0 0 0 0 0 4 3 0 0 0 0 0 5 3 4 0 0 0 0 3"
 
 params2="1 0 0  0 0 0  1  -1 0 0  0 0 0  1"
 
-echo -n "1e-6,"          && ./solution-step2 0 100 1e-6 $params2         | tail -n +3 | head -n 1
-echo -n "0.5e-6,"        && ./solution-step2 0 100 0.5e-6 $params2       | tail -n +3 | head -n 1
-echo -n "0.25e-6,"       && ./solution-step2 0 100 0.25e-6 $params2      | tail -n +3 | head -n 1
-echo -n "0.125e-6,"      && ./solution-step2 0 100 0.125e-6 $params2     | tail -n +3 | head -n 1
-echo -n "0.0625e-6,"     && ./solution-step2 0 100 0.0625e-6 $params2    | tail -n +3 | head -n 1
-echo -n "0.03125e-6,"    && ./solution-step2 0 100 0.03125e-6 $params2   | tail -n +3 | head -n 1
-echo -n "0.015625e-6,"   && ./solution-step2 0 100 0.015625e-6 $params2  | tail -n +3 | head -n 1
-echo -n "0.0078125e-6,"  && ./solution-step2 0 100 0.0078125e-6 $params2 | tail -n +3 | head -n 1
+# echo -n "1e-6,"          && ./solution-step2 0 100 1e-6 $params2         | tail -n +3 | head -n 1
+# echo -n "0.5e-6,"        && ./solution-step2 0 100 0.5e-6 $params2       | tail -n +3 | head -n 1
+# echo -n "0.25e-6,"       && ./solution-step2 0 100 0.25e-6 $params2      | tail -n +3 | head -n 1
+# echo -n "0.125e-6,"      && ./solution-step2 0 100 0.125e-6 $params2     | tail -n +3 | head -n 1
+# echo -n "0.0625e-6,"     && ./solution-step2 0 100 0.0625e-6 $params2    | tail -n +3 | head -n 1
+# echo -n "0.03125e-6,"    && ./solution-step2 0 100 0.03125e-6 $params2   | tail -n +3 | head -n 1
+# echo -n "0.015625e-6,"   && ./solution-step2 0 100 0.015625e-6 $params2  | tail -n +3 | head -n 1
+# echo -n "0.0078125e-6,"  && ./solution-step2 0 100 0.0078125e-6 $params2 | tail -n +3 | head -n 1
 
-# echo "1e-6, "         && ./solution-step2 0 100 1e-6 $params         | tail -n +3
-# echo "0.5e-6, "       && ./solution-step2 0 100 0.5e-6 $params       | tail -n +3
-# echo "0.25e-6, "      && ./solution-step2 0 100 0.25e-6 $params      | tail -n +3
-# echo "0.125e-6, "     && ./solution-step2 0 100 0.125e-6 $params     | tail -n +3
-# echo "0.0625e-6, "    && ./solution-step2 0 100 0.0625e-6 $params    | tail -n +3
-# echo "0.03125e-6, "   && ./solution-step2 0 100 0.03125e-6 $params   | tail -n +3
-# echo "0.015625e-6, "  && ./solution-step2 0 100 0.015625e-6 $params  | tail -n +3
-# echo "0.0078125e-6, " && ./solution-step2 0 100 0.0078125e-6 $params | tail -n +3
+echo "1e-6, "         && ./solution-step2 0 100 1e-6 $params         | tail -n +3
+echo "0.5e-6, "       && ./solution-step2 0 100 0.5e-6 $params       | tail -n +3
+echo "0.25e-6, "      && ./solution-step2 0 100 0.25e-6 $params      | tail -n +3
+echo "0.125e-6, "     && ./solution-step2 0 100 0.125e-6 $params     | tail -n +3
+echo "0.0625e-6, "    && ./solution-step2 0 100 0.0625e-6 $params    | tail -n +3
+echo "0.03125e-6, "   && ./solution-step2 0 100 0.03125e-6 $params   | tail -n +3
+echo "0.015625e-6, "  && ./solution-step2 0 100 0.015625e-6 $params  | tail -n +3
+echo "0.0078125e-6, " && ./solution-step2 0 100 0.0078125e-6 $params | tail -n +3
