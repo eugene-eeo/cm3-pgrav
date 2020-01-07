@@ -30,8 +30,8 @@ def main():
             mins, secs = time.split('m')
             secs = secs.rstrip('s')
             total = int(mins) * 60 + float(secs)
-            if int(nproc) > 24:
-                continue
+            # if int(nproc) > 24:
+            #     continue
             mode[int(nproc)].append(total)
 
     s = {k: avg(v) for k, v in serial.items()}
@@ -43,20 +43,28 @@ def main():
 
     print(speedup)
 
-    xdata = np.array(list(speedup.keys()))
-    ydata = np.array(list(speedup.values()))
+    xdata = np.array(sorted(speedup.keys()))
+    ydata = np.array([speedup[k] for k in xdata])
 
     def gustafson(p, f):
         return f + (1 - f) * p
 
+    my_dpi = 96
+    plt.figure(figsize=(400/my_dpi, 400/my_dpi), dpi=my_dpi)
     [f], _ = curve_fit(gustafson, xdata, ydata)
 
-    plt.scatter(xdata, ydata, c='b', label='data')
-    plt.scatter(xdata, gustafson(xdata, f), c='r', label='fit: f=%5.3f' % f)
+    plt.scatter(xdata, ydata, c='k', marker='x', label='data')
+    #plt.plot(xdata, ydata, 'kx-', label='data')
+    plt.plot(xdata, gustafson(xdata, f), 'kx-', label='fit: f=%5.3f' % f, alpha=0.3)
     plt.grid()
+    plt.title('Weak Scaling')
     plt.xlabel('cores')
     plt.ylabel('scaled speedup')
+    plt.xscale('log')
+    plt.yscale('log')
     plt.legend()
+
+    # plt.savefig('speedups-more2.png', dpi=my_dpi * 2)
     plt.show()
 
 
